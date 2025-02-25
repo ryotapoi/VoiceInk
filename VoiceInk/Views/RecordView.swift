@@ -6,6 +6,7 @@ struct RecordView: View {
     @EnvironmentObject var whisperState: WhisperState
     @EnvironmentObject var hotkeyManager: HotkeyManager
     @Environment(\.colorScheme) private var colorScheme
+    @ObservedObject private var mediaController = MediaController.shared
     
     private var hasShortcutSet: Bool {
         KeyboardShortcuts.getShortcut(for: .toggleMiniRecorder) != nil
@@ -111,11 +112,21 @@ struct RecordView: View {
                         }
                     }
                     .toggleStyle(.switch)
+                    
+                    Toggle(isOn: $mediaController.isMediaPauseEnabled) {
+                        HStack {
+                            Image(systemName: "play.slash")
+                                .foregroundColor(.secondary)
+                            Text("Pause media during recording")
+                                .font(.subheadline.weight(.medium))
+                        }
+                    }
+                    .toggleStyle(.switch)
+                    .help("Automatically pause music playback when recording starts and resume when recording stops")
                 }
             }
         }
         .padding(24)
-        
     }
     
     private var shortcutSection: some View {

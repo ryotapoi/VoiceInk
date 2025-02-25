@@ -41,15 +41,11 @@ class MiniWindowManager: ObservableObject {
     func hide() {
         guard isVisible else { return }
         
-        withAnimation(.easeOut(duration: 0.5)) {
-            self.isVisible = false
-        }
+        self.isVisible = false
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.miniPanel?.hide { [weak self] in
-                guard let self = self else { return }
-                self.deinitializeWindow()
-            }
+        self.miniPanel?.hide { [weak self] in
+            guard let self = self else { return }
+            self.deinitializeWindow()
         }
     }
     

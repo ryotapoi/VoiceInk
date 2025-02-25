@@ -270,9 +270,14 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                                 .appending(path: "output.wav")
                             self.logger.info("Created output file at: \(file.path)")
                             
-                            // Start recording immediately
-                            self.logger.info("Starting audio engine")
-                            self.audioEngine.startAudioEngine()
+                            // Only start the audio engine if it's not already running
+                            // (it might have been started in parallel by handleToggleMiniRecorder)
+                            if !self.audioEngine.isRunning {
+                                self.logger.info("Starting audio engine")
+                                self.audioEngine.startAudioEngine()
+                            } else {
+                                self.logger.info("Audio engine already running")
+                            }
                             
                             self.logger.info("Initializing recorder")
                             try await self.recorder.startRecording(toOutputFile: file, delegate: self)
@@ -656,10 +661,21 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 await toggleRecord()
             }
         } else {
-            // If the recorder is not visible, show it and start recording
-            showRecorderPanel()
-            isMiniRecorderVisible = true
+            // Start a parallel task for both UI and recording
             Task {
+                // Play start sound first
+                SoundManager.shared.playStartSound()
+                
+                // Start audio engine immediately - this can happen in parallel
+                audioEngine.startAudioEngine()
+                
+                // Show UI (this is quick now that we removed animations)
+                await MainActor.run {
+                    showRecorderPanel() // Modified version that doesn't start audio engine
+                    isMiniRecorderVisible = true
+                }
+                
+                // Start recording (this will happen in parallel with UI showing)
                 await toggleRecord()
             }
         }
@@ -680,8 +696,8 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             }
             miniWindowManager?.show()
         }
-        audioEngine.startAudioEngine()
-        SoundManager.shared.playStartSound()
+        // Audio engine is now started separately in handleToggleMiniRecorder
+        // SoundManager.shared.playStartSound() - Moved to handleToggleMiniRecorder
         logger.info("Recorder panel shown successfully")
     }
 
@@ -702,9 +718,23 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         if isMiniRecorderVisible {
             await dismissMiniRecorder()
         } else {
-            showRecorderPanel()
-            isMiniRecorderVisible = true
-            await toggleRecord()
+            // Start a parallel task for both UI and recording
+            Task {
+                // Play start sound first
+                SoundManager.shared.playStartSound()
+                
+                // Start audio engine immediately - this can happen in parallel
+                audioEngine.startAudioEngine()
+                
+                // Show UI (this is quick now that we removed animations)
+                await MainActor.run {
+                    showRecorderPanel() // Modified version that doesn't start audio engine
+                    isMiniRecorderVisible = true
+                }
+                
+                // Start recording
+                await toggleRecord()
+            }
         }
     }
 
@@ -737,10 +767,10 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             miniWindowManager?.hide()
         }
         
-        // 3. Wait for animation to complete
-        try? await Task.sleep(nanoseconds: 700_000_000)  // 0.7 seconds
+        // 3. No need to wait for animation since we removed it
+        // try? await Task.sleep(nanoseconds: 700_000_000)  // 0.7 seconds
         
-        // 4. Only after animation, clean up all states
+        // 4. Clean up states immediately
         await MainActor.run {
             logger.info("Cleaning up recorder states")
             // Reset all states

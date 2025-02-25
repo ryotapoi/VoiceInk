@@ -97,11 +97,6 @@ struct MiniRecorderView: View {
                         .padding(.vertical, 8)
                     }
                     .opacity(windowManager.isVisible ? 1 : 0)
-                    .animation(
-                        .easeOut(duration: 0.5)
-                        .speed(windowManager.isVisible ? 1.0 : 0.8),
-                        value: windowManager.isVisible
-                    )
             }
         }
     }

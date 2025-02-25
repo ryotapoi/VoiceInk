@@ -9,7 +9,7 @@ class SoundManager {
     private var stopSound: AVAudioPlayer?
     private var escSound: AVAudioPlayer?
     
-    @AppStorage("isSoundFeedbackEnabled") private var isSoundFeedbackEnabled = false
+    @AppStorage("isSoundFeedbackEnabled") private var isSoundFeedbackEnabled = true
     
     private init() {
         setupSounds()

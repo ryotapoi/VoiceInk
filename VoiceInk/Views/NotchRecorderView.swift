@@ -114,11 +114,6 @@ struct NotchRecorderView: View {
                     isHovering = hovering
                 }
                 .opacity(windowManager.isVisible ? 1 : 0)
-                .animation(
-                    .easeOut(duration: 0.5)
-                    .speed(windowManager.isVisible ? 1.0 : 0.8), // Slightly slower when hiding
-                    value: windowManager.isVisible
-                )
             }
         }
     }
@@ -238,13 +233,14 @@ struct NotchRecordButton: View {
                     .fill(buttonColor)
                     .frame(width: 22, height: 22)
                 
-                if isRecording {
+                if isProcessing {
+                    ProcessingIndicator(color: .white)
+                        .frame(width: 14, height: 14)
+                } else {
+                    // Show white square for both idle and recording states
                     RoundedRectangle(cornerRadius: 3)
                         .fill(Color.white)
                         .frame(width: 8, height: 8)
-                } else if isProcessing {
-                    ProcessingIndicator(color: .white)
-                        .frame(width: 14, height: 14)
                 }
             }
         }
@@ -255,10 +251,9 @@ struct NotchRecordButton: View {
     private var buttonColor: Color {
         if isProcessing {
             return Color(red: 0.4, green: 0.4, blue: 0.45)
-        } else if isRecording {
-            return .red
         } else {
-            return Color(red: 0.4, green: 0.4, blue: 0.45)
+            // Use red color for both idle and recording states
+            return .red
         }
     }
 }

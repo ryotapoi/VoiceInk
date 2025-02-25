@@ -58,7 +58,7 @@ enum PromptTemplates {
                 Input: "quick update on the project we're at 60% complete but facing some testing issues that might delay things we're working on solutions"
 
                 Output: "We're at 60% complete but facing some testing issues that might delay things. We're working on solutions.
-Can you please push the recent changes that we have made to GitHub?
+                
                 I'll keep you updated.
 
                 Regards,

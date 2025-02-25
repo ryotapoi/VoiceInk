@@ -9,6 +9,7 @@ actor Recorder {
     private let deviceManager = AudioDeviceManager.shared
     private var deviceObserver: NSObjectProtocol?
     private var isReconfiguring = false
+    private let mediaController = MediaController.shared
     
     enum RecorderError: Error {
         case couldNotStartRecording
@@ -98,6 +99,13 @@ actor Recorder {
     
     func startRecording(toOutputFile url: URL, delegate: AVAudioRecorderDelegate?) async throws {
         logger.info("Starting recording process")
+        
+        // Check if media is playing and pause it if needed
+        let wasPaused = await mediaController.pauseMediaIfPlaying()
+        if wasPaused {
+            logger.info("Media playback paused for recording")
+        }
+        
         // Get the current selected device
         let deviceID = deviceManager.getCurrentDevice()
         if deviceID != 0 {
@@ -142,12 +150,20 @@ actor Recorder {
                 if let deviceName = deviceManager.getDeviceName(deviceID: deviceID) {
                     logger.error("Current device name: \(deviceName)")
                 }
+                
+                // Resume media if we paused it but failed to start recording
+                await mediaController.resumeMediaIfPaused()
+                
                 throw RecorderError.couldNotStartRecording
             }
         } catch {
             logger.error("Error creating AVAudioRecorder: \(error.localizedDescription)")
             logger.error("Recording settings used: \(recordSettings)")
             logger.error("Output URL: \(url.path)")
+            
+            // Resume media if we paused it but failed to start recording
+            await mediaController.resumeMediaIfPaused()
+            
             throw error
         }
     }
@@ -161,6 +177,11 @@ actor Recorder {
         // Force a device change notification to trigger system audio profile reset
         logger.info("Triggering audio device change notification")
         NotificationCenter.default.post(name: NSNotification.Name("AudioDeviceChanged"), object: nil)
+        
+        // Resume media if we paused it
+        Task {
+            await mediaController.resumeMediaIfPaused()
+        }
         
         logger.info("Recording stopped successfully")
     }
