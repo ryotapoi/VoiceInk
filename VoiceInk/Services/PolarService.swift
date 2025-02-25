@@ -2,8 +2,8 @@ import Foundation
 import IOKit
 
 class PolarService {
-    private let organizationId = "6f3d781d-a630-4435-9dba-058486f2d936"
-    private let apiToken = "polar_pat_U7rxicH_Jn9szpse_kzgmDHRr_gH6UD8AzAFGRGZdbM"
+    private let organizationId = "Org"
+    private let apiToken = "Token"
     private let baseURL = "https://api.polar.sh"
     
     struct LicenseValidationResponse: Codable {
