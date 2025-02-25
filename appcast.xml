@@ -5,16 +5,17 @@
         <item>
             <title>0.92</title>
             <pubDate>Thu, 20 Feb 2025 07:51:55 +0545</pubDate>
-            <sparkle:version>93</sparkle:version>
-            <sparkle:shortVersionString>0.92</sparkle:shortVersionString>
+            <sparkle:version>94</sparkle:version>
+            <sparkle:shortVersionString>0.94</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                    <h3>What's New in Version 0.92 🚀⚡</h3>
+                    <h3>What's New in Version 0.94 🚀⚡</h3>
                         <ul>
-                            <li>Minor Bug Fixes</li>
+                            <li>New Sound Effects for Transcription activities</li>
+                            <li>Added the option to pause media playback during transcription</li>
                         </ul>
             ]]></description>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v0.92/VoiceInk.dmg" length="5671373" type="application/octet-stream" sparkle:edSignature="XfdRV0FrauKhYZoGRR0E3ABq+a7kvJNPbOlfj/V+ROS5bMYwE6UEeW/33f624hxbFjuFf/yzabDZ4N7c6hJ3Cw=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v0.94/VoiceInk.dmg" length="5717874" type="application/octet-stream" sparkle:edSignature="5mSyd4LFsIN77wYWyuPnlNdfz+9YfG5DTYO6McXz0B27mAD56qMQQuu7ivJL6WPF0/Kyl9lPaFYz2rtSk7a2Dg=="/>
         </item>
     </channel>
 </rss>
