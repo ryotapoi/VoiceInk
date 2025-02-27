@@ -236,9 +236,14 @@ struct NotchRecordButton: View {
                 if isProcessing {
                     ProcessingIndicator(color: .white)
                         .frame(width: 14, height: 14)
-                } else {
-                    // Show white square for both idle and recording states
+                } else if isRecording {
+                    // Show white square for recording state
                     RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.white)
+                        .frame(width: 8, height: 8)
+                } else {
+                    // Show white circle for idle state
+                    Circle()
                         .fill(Color.white)
                         .frame(width: 8, height: 8)
                 }
@@ -251,9 +256,11 @@ struct NotchRecordButton: View {
     private var buttonColor: Color {
         if isProcessing {
             return Color(red: 0.4, green: 0.4, blue: 0.45)
-        } else {
-            // Use red color for both idle and recording states
+        } else if isRecording {
             return .red
+        } else {
+            // Neutral gray for idle state
+            return Color(red: 0.3, green: 0.3, blue: 0.35)
         }
     }
 }
