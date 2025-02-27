@@ -183,7 +183,6 @@ struct ContentView: View {
             )
             .frame(width: 200)
             .navigationSplitViewColumnWidth(200)
-            .background(VisualEffectView(material: .sidebar, blendingMode: .behindWindow))
         } detail: {
             detailView
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
