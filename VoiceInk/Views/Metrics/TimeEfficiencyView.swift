@@ -45,8 +45,9 @@ struct TimeEfficiencyView: View {
             bottomSection
         }
         .padding(.vertical, 24)
-        .background(backgroundDesign)
-        .overlay(borderOverlay)
+        .background(Color(.controlBackgroundColor))
+        .cornerRadius(10)
+        .shadow(radius: 2)
     }
     
     // MARK: - Subviews
@@ -154,34 +155,6 @@ struct TimeEfficiencyView: View {
             )
         }
     }
-
-    // Extension to allow hex color initialization
-   
-    // MARK: - Styling Views
-    
-    private var backgroundDesign: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color(nsColor: .controlBackgroundColor))
-    }
-    
-    private var borderOverlay: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .stroke(
-                .linearGradient(
-                    colors: [
-                        Color(nsColor: .controlAccentColor).opacity(0.2),
-                        Color.clear,
-                        Color.clear,
-                        Color(nsColor: .controlAccentColor).opacity(0.1)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                lineWidth: 1
-            )
-    }
-    
-    
     
     private var efficiencyGradient: LinearGradient {
         LinearGradient(

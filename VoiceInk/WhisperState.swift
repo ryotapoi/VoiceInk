@@ -661,22 +661,31 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 await toggleRecord()
             }
         } else {
-            // Start a parallel task for both UI and recording
+            // Serialize audio operations to prevent deadlocks
             Task {
-                // Play start sound first
-                SoundManager.shared.playStartSound()
-                
-                // Start audio engine immediately - this can happen in parallel
-                audioEngine.startAudioEngine()
-                
-                // Show UI (this is quick now that we removed animations)
-                await MainActor.run {
-                    showRecorderPanel() // Modified version that doesn't start audio engine
-                    isMiniRecorderVisible = true
+                do {
+                    // First start the audio engine
+                    await MainActor.run {
+                        audioEngine.startAudioEngine()
+                    }
+                    
+                    // Small delay to ensure audio system is ready
+                    try await Task.sleep(nanoseconds: 50_000_000) // 50ms
+                    
+                    // Now play the sound
+                    SoundManager.shared.playStartSound()
+                    
+                    // Show UI
+                    await MainActor.run {
+                        showRecorderPanel()
+                        isMiniRecorderVisible = true
+                    }
+                    
+                    // Finally start recording
+                    await toggleRecord()
+                } catch {
+                    logger.error("Error during recorder initialization: \(error)")
                 }
-                
-                // Start recording (this will happen in parallel with UI showing)
-                await toggleRecord()
             }
         }
     }

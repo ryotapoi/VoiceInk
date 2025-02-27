@@ -43,7 +43,7 @@ struct MetricsView: View {
                 }
             }
         }
-        .background(Color(.windowBackgroundColor))
+        .background(Color(.controlBackgroundColor))
         .task {
             // Ensure the model context is ready
             hasLoadedData = true

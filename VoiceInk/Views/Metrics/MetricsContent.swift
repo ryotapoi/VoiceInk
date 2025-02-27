@@ -38,8 +38,30 @@ struct MetricsContent: View {
     
     private var metricsGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-            MetricCard(title: "Words Captured", value: "\(totalWordsTranscribed)")
-            MetricCard(title: "Voice-to-Text Sessions", value: "\(transcriptions.count)")
+            MetricCard(
+                title: "Words Captured",
+                value: "\(totalWordsTranscribed)",
+                icon: "text.word.spacing",
+                color: .blue
+            )
+            MetricCard(
+                title: "Voice-to-Text Sessions",
+                value: "\(transcriptions.count)",
+                icon: "mic.circle.fill",
+                color: .green
+            )
+            MetricCard(
+                title: "Average Words/Minute",
+                value: String(format: "%.1f", averageWordsPerMinute),
+                icon: "speedometer",
+                color: .orange
+            )
+            MetricCard(
+                title: "Words/Session",
+                value: String(format: "%.1f", averageWordsPerSession),
+                icon: "chart.bar.fill",
+                color: .purple
+            )
         }
     }
     
@@ -116,5 +138,16 @@ struct MetricsContent: View {
         }
         
         return dailyData.reversed()
+    }
+    
+    // Add computed properties for new metrics
+    private var averageWordsPerMinute: Double {
+        guard totalRecordedTime > 0 else { return 0 }
+        return Double(totalWordsTranscribed) / (totalRecordedTime / 60.0)
+    }
+    
+    private var averageWordsPerSession: Double {
+        guard !transcriptions.isEmpty else { return 0 }
+        return Double(totalWordsTranscribed) / Double(transcriptions.count)
     }
 } 
