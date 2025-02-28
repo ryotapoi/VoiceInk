@@ -25,16 +25,26 @@
 
 ---
 
-VoiceInk is a native macOS application that transcribes what you say to text almost instantly. It works everywhere on your mac and has near perfect accuracy. It provides a seamless and efficient way to work without ever doing the manual typing, ever again.
+VoiceInk is a native macOS application that transcribes what you say to text almost instantly. After dedicating the past 5 months to developing this app, I've decided to open source it for the greater good. My goal is to make it the most efficient and privacy-focused voice-to-text solution for macOS. While the source code is now open for experienced developers to build and contribute, purchasing a license helps support continued development and gives you access to automatic updates, priority support, and upcoming features.
 
 ## Features
 
-- 🎙️ Real-time voice transcription
-- 💻 Native macOS application
-- 🚀 Powered by Whisper AI for efficient, local transcription
-- 🔒 Privacy-focused: All processing happens locally on your device
-- ⚡ Fast and responsive interface
-- 🤖 Supports AI enhancements (bring your own API keys)
+- 🎙️ **Accurate Transcription**: Local AI models that transcribe your voice to text with 99% accuracy, almost instantly
+- 🔒 **Privacy First**: 100% offline processing ensures your data never leaves your device
+- ⚡ **Power Mode**: Intelligent app detection automatically applies your perfect pre-configured settings based on the app/ URL you're on
+- 🧠 **Context Aware**: Smart AI that understands your screen content and adapts to the context
+- 🎯 **Global Shortcuts**: Configurable keyboard shortcuts for quick recording and push-to-talk functionality
+- 📝 **Personal Dictionary**: Train the AI to understand your unique terminology with custom words, industry terms, and smart text replacements
+- 🔄 **Smart Modes**: Instantly switch between AI-powered modes optimized for different writing styles and contexts
+- 🤖 **AI Assistant**: Built-in voice assistant mode for a quick chatGPT like conversational assistant
+
+## Get Started
+
+### Download
+Get the latest version with a free trial from [tryvoiceink.com](https://tryvoiceink.com). Your purchase helps me work on VoiceInk full-time and continuously improve it with new features and updates.
+
+### Build from Source
+As an open-source project, you can build VoiceInk yourself by following the instructions in [BUILDING.md](BUILDING.md). However, the compiled version includes additional benefits like automatic updates, priority support via Discord and email, and helps fund ongoing development.
 
 ## Requirements
 
@@ -75,9 +85,7 @@ If you encounter any issues or have questions, please:
 
 ### Essential Dependencies
 - [Sparkle](https://github.com/sparkle-project/Sparkle) - Keeping VoiceInk up to date
-- [HotKey](https://github.com/soffes/HotKey) - Global shortcut support
 - [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) - User-customizable keyboard shortcuts
-- [Defaults](https://github.com/sindresorhus/Defaults) - Modern user defaults management
 - [LaunchAtLogin](https://github.com/sindresorhus/LaunchAtLogin) - Launch at login functionality
 
 
