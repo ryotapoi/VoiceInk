@@ -20,7 +20,12 @@
 
 ---
 
-VoiceInk is a native macOS application that transcribes what you say to text almost instantly. After dedicating the past 5 months to developing this app, I've decided to open source it for the greater good. My goal is to make it the most efficient and privacy-focused voice-to-text solution for macOS. While the source code is now open for experienced developers to build and contribute, purchasing a license helps support continued development and gives you access to automatic updates, priority support, and upcoming features.
+VoiceInk is a native macOS application that transcribes what you say to text almost instantly. 
+
+![VoiceInk 2025-02-28 14 34 49](https://github.com/user-attachments/assets/92877bdd-52d1-43ce-9d69-29ff2468c6d7)
+
+
+After dedicating the past 5 months to developing this app, I've decided to open source it for the greater good. My goal is to make it the most efficient and privacy-focused voice-to-text solution for macOS. While the source code is now open for experienced developers to build and contribute, purchasing a license helps support continued development and gives you access to automatic updates, priority support, and upcoming features.
 
 ## Features
 
