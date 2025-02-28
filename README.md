@@ -16,7 +16,6 @@
   <a href="https://tryvoiceink.com">
     <img src="https://img.shields.io/badge/Download%20Now-Latest%20Version-blue?style=for-the-badge&logo=apple" alt="Download VoiceInk" width="250"/>
   </a>
-  <p style="margin-top: 8px; font-size: 0.9em;">macOS 14.0 or later required</p>
 </div>
 
 ---
