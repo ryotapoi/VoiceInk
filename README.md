@@ -13,7 +13,7 @@
     <a href="https://www.youtube.com/@tryvoiceink">YouTube</a>
   </p>
 
-  <a href="https://tryvoiceink.com">w
+  <a href="https://tryvoiceink.com">
     <img src="https://img.shields.io/badge/Download%20Now-Latest%20Version-blue?style=for-the-badge&logo=apple" alt="Download VoiceInk" width="250"/>
   </a>
 </div>
