@@ -3,19 +3,18 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>0.95</title>
+            <title>0.96</title>
             <pubDate>Thu, 20 Feb 2025 07:51:55 +0545</pubDate>
-            <sparkle:version>95</sparkle:version>
-            <sparkle:shortVersionString>0.95</sparkle:shortVersionString>
+            <sparkle:version>96</sparkle:version>
+            <sparkle:shortVersionString>0.96</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                    <h3>What's New in Version 0.95 🚀⚡</h3>
+                    <h3>What's New in Version 0.96 🚀⚡</h3>
                         <ul>
-                            <li>More stats in dashboard</li>
-                            <li>Minor fixes & Improvements</li>
+                            <li>Added Power Mode Toggle option</li>
                         </ul>
             ]]></description>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v.0.95/VoiceInk.dmg" length="5721468" type="application/octet-stream" sparkle:edSignature="i/E5T4CGy55EGJfiESHdiQCC1Tre4caaTALKSWIhKBCNV3cG42IODEoTwVksVb6gGONwzu3NhUtPCOlMs24VCQ=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v0.96/VoiceInk.dmg" length="5729623" type="application/octet-stream" sparkle:edSignature="jlwFE/eSFNrjcTiq7aLfgrUXEGED8QolzzZZq6kFYd+ZQX2mQOa9zxh9ugowWTCMGg6AW9hFUpuVsTwtmPuQBQ=="/>
         </item>
     </channel>
 </rss>

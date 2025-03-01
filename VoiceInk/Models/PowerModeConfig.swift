@@ -30,11 +30,16 @@ class PowerModeManager: ObservableObject {
     static let shared = PowerModeManager()
     @Published var configurations: [PowerModeConfig] = []
     @Published var defaultConfig: PowerModeConfig
+    @Published var isPowerModeEnabled: Bool
     
     private let configKey = "powerModeConfigurations"
     private let defaultConfigKey = "defaultPowerModeConfig"
+    private let powerModeEnabledKey = "isPowerModeEnabled"
     
     private init() {
+        // Load power mode enabled state
+        self.isPowerModeEnabled = UserDefaults.standard.bool(forKey: powerModeEnabledKey)
+        
         // Initialize default config with default values
         if let data = UserDefaults.standard.data(forKey: defaultConfigKey),
            let config = try? JSONDecoder().decode(PowerModeConfig.self, from: data) {
@@ -149,5 +154,10 @@ class PowerModeManager: ObservableObject {
                 updateConfiguration(updatedConfig)
             }
         }
+    }
+    
+    // Save power mode enabled state
+    func savePowerModeEnabled() {
+        UserDefaults.standard.set(isPowerModeEnabled, forKey: powerModeEnabledKey)
     }
 } 

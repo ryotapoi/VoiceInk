@@ -57,22 +57,29 @@ class ActiveWindowService: ObservableObject {
         guard let enhancementService = enhancementService else { return }
         
         await MainActor.run {
-            // Apply AI enhancement settings
-            enhancementService.isEnhancementEnabled = config.isAIEnhancementEnabled
-            
-            // Handle prompt selection
-            if config.isAIEnhancementEnabled {
-                if let promptId = config.selectedPrompt,
-                   let uuid = UUID(uuidString: promptId) {
-                    print("🎯 Applied Prompt: \(enhancementService.allPrompts.first(where: { $0.id == uuid })?.title ?? "Unknown")")
-                    enhancementService.selectedPromptId = uuid
-                } else {
-                    // Auto-select first prompt if none is selected and AI is enabled
-                    if let firstPrompt = enhancementService.allPrompts.first {
-                        print("🎯 Auto-selected Prompt: \(firstPrompt.title)")
-                        enhancementService.selectedPromptId = firstPrompt.id
+            // Only apply settings if power mode is enabled globally
+            if PowerModeManager.shared.isPowerModeEnabled {
+                // Apply AI enhancement settings
+                enhancementService.isEnhancementEnabled = config.isAIEnhancementEnabled
+                
+                // Handle prompt selection
+                if config.isAIEnhancementEnabled {
+                    if let promptId = config.selectedPrompt,
+                       let uuid = UUID(uuidString: promptId) {
+                        print("🎯 Applied Prompt: \(enhancementService.allPrompts.first(where: { $0.id == uuid })?.title ?? "Unknown")")
+                        enhancementService.selectedPromptId = uuid
+                    } else {
+                        // Auto-select first prompt if none is selected and AI is enabled
+                        if let firstPrompt = enhancementService.allPrompts.first {
+                            print("🎯 Auto-selected Prompt: \(firstPrompt.title)")
+                            enhancementService.selectedPromptId = firstPrompt.id
+                        }
                     }
                 }
+            } else {
+                // If power mode is disabled globally, disable AI enhancement
+                enhancementService.isEnhancementEnabled = false
+                print("🔌 Power Mode is disabled globally")
             }
         }
     }
