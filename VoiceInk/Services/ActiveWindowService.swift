@@ -14,6 +14,12 @@ class ActiveWindowService: ObservableObject {
     }
     
     func applyConfigurationForCurrentApp() async {
+        // If power mode is disabled, don't do anything
+        guard PowerModeManager.shared.isPowerModeEnabled else {
+            print("🔌 Power Mode is disabled globally - skipping configuration application")
+            return
+        }
+
         guard let frontmostApp = NSWorkspace.shared.frontmostApplication,
               let bundleIdentifier = frontmostApp.bundleIdentifier else { return }
         
@@ -77,9 +83,8 @@ class ActiveWindowService: ObservableObject {
                     }
                 }
             } else {
-                // If power mode is disabled globally, disable AI enhancement
-                enhancementService.isEnhancementEnabled = false
-                print("🔌 Power Mode is disabled globally")
+                print("🔌 Power Mode is disabled globally - skipping configuration application")
+                return
             }
         }
     }
