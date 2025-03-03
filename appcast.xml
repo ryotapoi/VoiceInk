@@ -3,10 +3,10 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>0.97</title>
-            <pubDate>Thu, 2 Mar 2025 07:51:55 +0545</pubDate>
-            <sparkle:version>97</sparkle:version>
-            <sparkle:shortVersionString>0.97</sparkle:shortVersionString>
+            <title>0.98</title>
+            <pubDate>Thu, 3 Mar 2025 07:51:55 +0545</pubDate>
+            <sparkle:version>98</sparkle:version>
+            <sparkle:shortVersionString>0.98</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
                     <h3>What's New in Version 0.98 🚀⚡</h3>
@@ -15,7 +15,7 @@
                             <li>Minor Fixes to make the app faster</li>
                         </ul>
             ]]></description>
-            <enclosure url="https://beingpax.github.io/VoiceInk/VoiceInk.dmg" length="5707061" type="application/octet-stream" sparkle:edSignature="DIgZhiN4PUZOfOKVoRyNFhCU2ibH5vncvXBF0Mc+3NSXtMIXumHlcP9zMBcZG6jUEjQOS3xCqBxVrSWWZ0kIAw=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v0.98/VoiceInk.dmg" length="5707061" type="application/octet-stream" sparkle:edSignature="DIgZhiN4PUZOfOKVoRyNFhCU2ibH5vncvXBF0Mc+3NSXtMIXumHlcP9zMBcZG6jUEjQOS3xCqBxVrSWWZ0kIAw=="/>
         </item>
     </channel>
 </rss>
