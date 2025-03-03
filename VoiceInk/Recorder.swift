@@ -3,13 +3,16 @@ import AVFoundation
 import CoreAudio
 import os
 
-actor Recorder {
+@MainActor // Change to MainActor since we need to interact with UI
+class Recorder: ObservableObject {
     private var recorder: AVAudioRecorder?
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "Recorder")
     private let deviceManager = AudioDeviceManager.shared
     private var deviceObserver: NSObjectProtocol?
     private var isReconfiguring = false
     private let mediaController = MediaController.shared
+    @Published var audioMeter = AudioMeter(averagePower: 0, peakPower: 0)
+    private var levelMonitorTimer: Timer?
     
     enum RecorderError: Error {
         case couldNotStartRecording
@@ -139,11 +142,13 @@ actor Recorder {
             logger.info("Initializing AVAudioRecorder with URL: \(url.path)")
             let recorder = try AVAudioRecorder(url: url, settings: recordSettings)
             recorder.delegate = delegate
+            recorder.isMeteringEnabled = true // Enable metering
             
             logger.info("Attempting to start recording...")
             if recorder.record() {
                 logger.info("Recording started successfully")
                 self.recorder = recorder
+                startLevelMonitoring()
             } else {
                 logger.error("Failed to start recording - recorder.record() returned false")
                 logger.error("Current device ID: \(deviceID)")
@@ -170,6 +175,7 @@ actor Recorder {
     
     func stopRecording() {
         logger.info("Stopping recording")
+        stopLevelMonitoring()
         recorder?.stop()
         recorder?.delegate = nil // Remove delegate
         recorder = nil
@@ -186,10 +192,56 @@ actor Recorder {
         logger.info("Recording stopped successfully")
     }
     
+    private func startLevelMonitoring() {
+        levelMonitorTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.updateAudioLevel()
+        }
+    }
+    
+    private func stopLevelMonitoring() {
+        levelMonitorTimer?.invalidate()
+        levelMonitorTimer = nil
+        audioMeter = AudioMeter(averagePower: 0, peakPower: 0)
+    }
+    
+    private func updateAudioLevel() {
+        guard let recorder = recorder else { return }
+        recorder.updateMeters()
+        
+        // Get the power values in decibels
+        let averagePowerDb = recorder.averagePower(forChannel: 0)
+        let peakPowerDb = recorder.peakPower(forChannel: 0)
+        
+        // Convert from dB to linear scale using proper conversion
+        let normalizedAverage = pow(10, Double(averagePowerDb) / 30)
+        let normalizedPeak = pow(10, Double(peakPowerDb) / 30)
+        
+        // Apply standard scaling factor for all devices
+        let scalingFactor = 2.5
+        
+        // Update the audio meter with scaled values
+        let scaledAverage = min(normalizedAverage * scalingFactor, 1.0)
+        let scaledPeak = min(normalizedPeak * scalingFactor, 1.0)
+        
+        audioMeter = AudioMeter(
+            averagePower: scaledAverage,
+            peakPower: scaledPeak
+        )
+    }
+    
     deinit {
         logger.info("Deinitializing Recorder")
         if let observer = deviceObserver {
             NotificationCenter.default.removeObserver(observer)
         }
+        Task { @MainActor in
+            stopLevelMonitoring()
+        }
     }
+}
+
+struct AudioMeter: Equatable {
+    let averagePower: Double
+    let peakPower: Double
 }

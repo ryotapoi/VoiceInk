@@ -58,15 +58,14 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         case couldNotLocateModel
     }
     
-    private let modelsDirectory: URL
-    private let recordingsDirectory: URL
-    private var transcriptionStartTime: Date?
-    private var enhancementService: AIEnhancementService?
+    let modelsDirectory: URL
+    let recordingsDirectory: URL
+    private let enhancementService: AIEnhancementService?
     private let licenseViewModel: LicenseViewModel
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "WhisperState")
+    private var transcriptionStartTime: Date?
     private var notchWindowManager: NotchWindowManager?
     private var miniWindowManager: MiniWindowManager?
-    var audioEngine: AudioEngine
-    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "WhisperState")
     
     init(modelContext: ModelContext, enhancementService: AIEnhancementService? = nil) {
         self.modelContext = modelContext
@@ -74,7 +73,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         self.recordingsDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("com.prakashjoshipax.VoiceInk")
             .appendingPathComponent("Recordings")
-        self.audioEngine = AudioEngine()
         self.enhancementService = enhancementService
         self.licenseViewModel = LicenseViewModel()
         
@@ -150,7 +148,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             await recorder.stopRecording()
             isRecording = false
             isVisualizerActive = false
-            audioEngine.stopAudioEngine()
             if let recordedFile {
                 let duration = Date().timeIntervalSince(transcriptionStartTime ?? Date())
                 await transcribeAudio(recordedFile, duration: duration)
@@ -165,10 +162,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                                 appropriateFor: nil,
                                 create: true)
                                 .appending(path: "output.wav")
-                            
-                            if !self.audioEngine.isRunning {
-                                self.audioEngine.startAudioEngine()
-                            }
                             
                             try await self.recorder.startRecording(toOutputFile: file, delegate: self)
                             
@@ -192,7 +185,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                             self.messageLog += "\(error.localizedDescription)\n"
                             self.isRecording = false
                             self.isVisualizerActive = false
-                            self.audioEngine.stopAudioEngine()
                         }
                     }
                 } else {
@@ -479,30 +471,17 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 await toggleRecord()
             }
         } else {
-            // Serialize audio operations to prevent deadlocks
+            // Start recording first, then show UI
             Task {
-                do {
-                    // First start the audio engine
-                    await MainActor.run {
-                        audioEngine.startAudioEngine()
-                    }
-                    
-                    // Small delay to ensure audio system is ready
-                    try await Task.sleep(nanoseconds: 50_000_000) // 50ms
-                    
-                    // Now play the sound
-                    SoundManager.shared.playStartSound()
-                    
-                    // Show UI
-                    await MainActor.run {
-                        showRecorderPanel()
-                        isMiniRecorderVisible = true
-                    }
-                    
-                    // Finally start recording
-                    await toggleRecord()
-                } catch {
-                    logger.error("Error during recorder initialization: \(error)")
+                // Start recording immediately
+                await toggleRecord()
+                
+                // Play sound and show UI after recording has started
+                SoundManager.shared.playStartSound()
+                
+                await MainActor.run {
+                    showRecorderPanel()
+                    isMiniRecorderVisible = true
                 }
             }
         }
@@ -512,25 +491,21 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         logger.info("Showing recorder panel, type: \(self.recorderType)")
         if recorderType == "notch" {
             if notchWindowManager == nil {
-                notchWindowManager = NotchWindowManager(whisperState: self, audioEngine: audioEngine)
+                notchWindowManager = NotchWindowManager(whisperState: self, recorder: recorder)
                 logger.info("Created new notch window manager")
             }
             notchWindowManager?.show()
         } else {
             if miniWindowManager == nil {
-                miniWindowManager = MiniWindowManager(whisperState: self, audioEngine: audioEngine)
+                miniWindowManager = MiniWindowManager(whisperState: self, recorder: recorder)
                 logger.info("Created new mini window manager")
             }
             miniWindowManager?.show()
         }
-        // Audio engine is now started separately in handleToggleMiniRecorder
-        // SoundManager.shared.playStartSound() - Moved to handleToggleMiniRecorder
         logger.info("Recorder panel shown successfully")
     }
 
     private func hideRecorderPanel() {
-        audioEngine.stopAudioEngine()
-        
         if isRecording {
             Task {
                 await toggleRecord()
@@ -542,30 +517,20 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         if isMiniRecorderVisible {
             await dismissMiniRecorder()
         } else {
-            // Start a parallel task for both UI and recording
-            Task {
-                // Play start sound first
-                SoundManager.shared.playStartSound()
-                
-                // Start audio engine immediately - this can happen in parallel
-                audioEngine.startAudioEngine()
-                
-                // Show UI (this is quick now that we removed animations)
-                await MainActor.run {
-                    showRecorderPanel() // Modified version that doesn't start audio engine
-                    isMiniRecorderVisible = true
-                }
-                
-                // Start recording
-                await toggleRecord()
+            // Start recording first
+            await toggleRecord()
+            
+            // Play sound and show UI after recording has started
+            SoundManager.shared.playStartSound()
+            
+            await MainActor.run {
+                showRecorderPanel()
+                isMiniRecorderVisible = true
             }
         }
     }
 
     private func cleanupResources() async {
-        audioEngine.stopAudioEngine()
-        try? await Task.sleep(nanoseconds: 100_000_000)
-        
         if !isRecording && !isProcessing {
             await whisperContext?.releaseResources()
             whisperContext = nil
@@ -616,7 +581,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             whisperContext = nil
             isModelLoaded = false
             
-            audioEngine.stopAudioEngine()
             if let recordedFile = recordedFile {
                 try? FileManager.default.removeItem(at: recordedFile)
                 self.recordedFile = nil

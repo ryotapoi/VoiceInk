@@ -6,11 +6,11 @@ class MiniWindowManager: ObservableObject {
     private var windowController: NSWindowController?
     private var miniPanel: MiniRecorderPanel?
     private let whisperState: WhisperState
-    private let audioEngine: AudioEngine
+    private let recorder: Recorder
     
-    init(whisperState: WhisperState, audioEngine: AudioEngine) {
+    init(whisperState: WhisperState, recorder: Recorder) {
         self.whisperState = whisperState
-        self.audioEngine = audioEngine
+        self.recorder = recorder
         
         NotificationCenter.default.addObserver(
             self,
@@ -55,7 +55,7 @@ class MiniWindowManager: ObservableObject {
         let metrics = MiniRecorderPanel.calculateWindowMetrics()
         let panel = MiniRecorderPanel(contentRect: metrics)
         
-        let miniRecorderView = MiniRecorderView(whisperState: whisperState, audioEngine: audioEngine)
+        let miniRecorderView = MiniRecorderView(whisperState: whisperState, recorder: recorder)
             .environmentObject(self)
         
         let hostingController = NSHostingController(rootView: miniRecorderView)

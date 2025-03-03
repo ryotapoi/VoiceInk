@@ -2,7 +2,7 @@ import SwiftUI
 
 struct NotchRecorderView: View {
     @ObservedObject var whisperState: WhisperState
-    @ObservedObject var audioEngine: AudioEngine
+    @ObservedObject var recorder: Recorder
     @EnvironmentObject var windowManager: NotchWindowManager
     @State private var isHovering = false
     @State private var showPromptPopover = false
@@ -92,7 +92,7 @@ struct NotchRecorderView: View {
                                 NotchStaticVisualizer(color: .white)
                             } else {
                                 NotchAudioVisualizer(
-                                    audioLevel: audioEngine.audioLevel,
+                                    audioMeter: recorder.audioMeter,
                                     color: .white,
                                     isActive: whisperState.isRecording
                                 )
@@ -266,7 +266,7 @@ struct NotchRecordButton: View {
 }
 
 struct NotchAudioVisualizer: View {
-    let audioLevel: CGFloat
+    let audioMeter: AudioMeter
     let color: Color
     let isActive: Bool
     
@@ -275,23 +275,33 @@ struct NotchAudioVisualizer: View {
     private let maxHeight: CGFloat = 18
     private let audioThreshold: CGFloat = 0.01
     
-    @State private var barHeights: [CGFloat]
+    @State private var barHeights: [BarLevel] = []
     
-    init(audioLevel: CGFloat, color: Color, isActive: Bool) {
-        self.audioLevel = audioLevel
+    struct BarLevel {
+        var average: CGFloat
+        var peak: CGFloat
+    }
+    
+    init(audioMeter: AudioMeter, color: Color, isActive: Bool) {
+        self.audioMeter = audioMeter
         self.color = color
         self.isActive = isActive
-        _barHeights = State(initialValue: Array(repeating: minHeight, count: 5))
+        _barHeights = State(initialValue: Array(repeating: BarLevel(average: minHeight, peak: minHeight), count: 5))
     }
     
     var body: some View {
         HStack(spacing: 2) {
             ForEach(0..<barCount, id: \.self) { index in
-                NotchVisualizerBar(height: barHeights[index], color: color)
+                NotchVisualizerBar(
+                    averageHeight: barHeights[index].average,
+                    peakHeight: barHeights[index].peak,
+                    color: color
+                )
             }
         }
-        .onReceive(Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()) { _ in
-            if isActive && audioLevel > audioThreshold {
+        .onChange(of: audioMeter) { newMeter in
+           
+            if isActive {
                 updateBars()
             } else {
                 resetBars()
@@ -303,47 +313,70 @@ struct NotchAudioVisualizer: View {
         for i in 0..<barCount {
             let targetHeight = calculateTargetHeight(for: i)
             let speed = CGFloat.random(in: 0.4...0.8)
-            barHeights[i] += (targetHeight - barHeights[i]) * speed
+            
+            withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                barHeights[i].average += (targetHeight.average - barHeights[i].average) * speed
+                barHeights[i].peak += (targetHeight.peak - barHeights[i].peak) * speed
+            }
         }
     }
     
     private func resetBars() {
-        for i in 0..<barCount {
-            barHeights[i] = minHeight
+        withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+            for i in 0..<barCount {
+                barHeights[i].average = minHeight
+                barHeights[i].peak = minHeight
+            }
         }
     }
     
-    private func calculateTargetHeight(for index: Int) -> CGFloat {
-        let normalizedLevel = max(0, audioLevel - audioThreshold)
-        let amplifiedLevel = pow(normalizedLevel, 0.6)
-        let baseHeight = amplifiedLevel * maxHeight * 1.7
-        let variation = CGFloat.random(in: -2...2)
+    private func calculateTargetHeight(for index: Int) -> BarLevel {
         let positionFactor = CGFloat(index) / CGFloat(barCount - 1)
         let curve = sin(positionFactor * .pi)
         
-        return max(minHeight, min(baseHeight * curve + variation, maxHeight))
+        let randomFactor = Double.random(in: 0.8...1.2)
+        let averageBase = audioMeter.averagePower * randomFactor
+        let peakBase = audioMeter.peakPower * randomFactor
+        
+        let averageHeight = CGFloat(averageBase) * maxHeight * 1.7 * curve
+        let peakHeight = CGFloat(peakBase) * maxHeight * 1.7 * curve
+        
+        let finalAverage = max(minHeight, min(averageHeight, maxHeight))
+        let finalPeak = max(minHeight, min(peakHeight, maxHeight))
+        
+        
+        return BarLevel(
+            average: finalAverage,
+            peak: finalPeak
+        )
     }
 }
 
 struct NotchVisualizerBar: View {
-    let height: CGFloat
+    let averageHeight: CGFloat
+    let peakHeight: CGFloat
     let color: Color
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 1.5)
-            .fill(
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        color.opacity(0.6),
-                        color.opacity(0.8),
-                        color
-                    ]),
-                    startPoint: .bottom,
-                    endPoint: .top
+        ZStack(alignment: .bottom) {
+            // Average level bar
+            RoundedRectangle(cornerRadius: 1.5)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            color.opacity(0.6),
+                            color.opacity(0.8),
+                            color
+                        ]),
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
                 )
-            )
-            .frame(width: 2, height: height)
-            .animation(.spring(response: 0.2, dampingFraction: 0.7, blendDuration: 0), value: height)
+                .frame(width: 2, height: averageHeight)
+        
+        }
+        .animation(.spring(response: 0.2, dampingFraction: 0.7, blendDuration: 0), value: averageHeight)
+        .animation(.spring(response: 0.2, dampingFraction: 0.7, blendDuration: 0), value: peakHeight)
     }
 }
 
@@ -355,7 +388,11 @@ struct NotchStaticVisualizer: View {
     var body: some View {
         HStack(spacing: 2) {
             ForEach(0..<barCount, id: \.self) { index in
-                NotchVisualizerBar(height: barHeights[index] * 18, color: color)
+                NotchVisualizerBar(
+                    averageHeight: barHeights[index] * 18,
+                    peakHeight: barHeights[index] * 18,
+                    color: color
+                )
             }
         }
     }

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MiniRecorderView: View {
     @ObservedObject var whisperState: WhisperState
-    @ObservedObject var audioEngine: AudioEngine
+    @ObservedObject var recorder: Recorder
     @EnvironmentObject var windowManager: MiniWindowManager
     @State private var showPromptPopover = false
     
@@ -84,7 +84,7 @@ struct MiniRecorderView: View {
                                     NotchStaticVisualizer(color: .white)
                                 } else {
                                     NotchAudioVisualizer(
-                                        audioLevel: audioEngine.audioLevel,
+                                        audioMeter: recorder.audioMeter,
                                         color: .white,
                                         isActive: whisperState.isRecording
                                     )

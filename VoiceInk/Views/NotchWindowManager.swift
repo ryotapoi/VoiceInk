@@ -6,11 +6,11 @@ class NotchWindowManager: ObservableObject {
     private var windowController: NSWindowController?
     private var notchPanel: NotchRecorderPanel?
     private let whisperState: WhisperState
-    private let audioEngine: AudioEngine
+    private let recorder: Recorder
     
-    init(whisperState: WhisperState, audioEngine: AudioEngine) {
+    init(whisperState: WhisperState, recorder: Recorder) {
         self.whisperState = whisperState
-        self.audioEngine = audioEngine
+        self.recorder = recorder
         
         NotificationCenter.default.addObserver(
             self,
@@ -58,8 +58,7 @@ class NotchWindowManager: ObservableObject {
         let metrics = NotchRecorderPanel.calculateWindowMetrics()
         let panel = NotchRecorderPanel(contentRect: metrics.frame)
         
-        // Create the NotchRecorderView and set it as the content
-        let notchRecorderView = NotchRecorderView(whisperState: whisperState, audioEngine: audioEngine)
+        let notchRecorderView = NotchRecorderView(whisperState: whisperState, recorder: recorder)
             .environmentObject(self)
         
         let hostingController = NotchRecorderHostingController(rootView: notchRecorderView)
@@ -68,7 +67,6 @@ class NotchWindowManager: ObservableObject {
         self.notchPanel = panel
         self.windowController = NSWindowController(window: panel)
         
-        // Only use orderFrontRegardless to show without activating
         panel.orderFrontRegardless()
     }
     

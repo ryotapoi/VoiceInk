@@ -95,7 +95,6 @@ struct VoiceInkApp: App {
                         WindowManager.shared.configureWindow(window)
                     })
                     .onDisappear {
-                        whisperState.audioEngine.stopAudioEngine()
                         whisperState.unloadModel()
                     }
             } else {
