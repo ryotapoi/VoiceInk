@@ -16,6 +16,10 @@ actor WhisperContext {
     private var prompt: String?
     private var promptCString: [CChar]?
 
+    private init() {
+        // Private initializer without context
+    }
+
     init(context: OpaquePointer) {
         self.context = context
     }
@@ -104,22 +108,29 @@ actor WhisperContext {
     }
 
     static func createContext(path: String) async throws -> WhisperContext {
-        // Create the context in an isolated task
-        return try await Task.detached {
-            var params = whisper_context_default_params()
-            #if targetEnvironment(simulator)
-            params.use_gpu = false
-            print("Running on the simulator, using CPU")
-            #endif
-            
-            guard let contextPtr = whisper_init_from_file_with_params(path, params) else {
-                print("Couldn't load model at \(path)")
-                throw WhisperError.couldNotInitializeContext
-            }
-            
-            // Create the actor instance directly in this task
-            return WhisperContext(context: contextPtr)
-        }.value
+        // Create empty context first
+        let whisperContext = WhisperContext()
+        
+        // Initialize the context within the actor's isolated context
+        try await whisperContext.initializeModel(path: path)
+        
+        return whisperContext
+    }
+    
+    private func initializeModel(path: String) throws {
+        var params = whisper_context_default_params()
+        #if targetEnvironment(simulator)
+        params.use_gpu = false
+        print("Running on the simulator, using CPU")
+        #endif
+        
+        let context = whisper_init_from_file_with_params(path, params)
+        if let context {
+            self.context = context
+        } else {
+            print("Couldn't load model at \(path)")
+            throw WhisperError.couldNotInitializeContext
+        }
     }
 
     func releaseResources() {
