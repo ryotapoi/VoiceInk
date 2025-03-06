@@ -168,11 +168,11 @@ struct PromptEditorView: View {
                     if case .add = mode {
                         // Templates Section with improved styling
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Templates")
+                            Text("Start with a Predefined Template")
                                 .font(.headline)
                                 .foregroundColor(.secondary)
                             
-                            Text("Start with a predefined template")
+                            Text("Scroll horizontally to see more templates")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                             
