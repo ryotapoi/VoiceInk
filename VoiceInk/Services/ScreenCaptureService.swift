@@ -1,10 +1,16 @@
 import Foundation
 import AppKit
 import Vision
+import os
 
 class ScreenCaptureService: ObservableObject {
     @Published var isCapturing = false
     @Published var lastCapturedText: String?
+    
+    private let logger = Logger(
+        subsystem: "com.prakashjoshipax.VoiceInk",
+        category: "aienhancement"
+    )
     
     private func getActiveWindowInfo() -> (title: String, ownerName: String, windowID: CGWindowID)? {
         let options = CGWindowListOption([.optionOnScreenOnly, .excludeDesktopElements])
@@ -86,10 +92,15 @@ class ScreenCaptureService: ObservableObject {
         isCapturing = true
         defer { isCapturing = false }
         
+        logger.notice("🎬 Starting screen capture")
+        
         // First get window info
         guard let windowInfo = getActiveWindowInfo() else {
+            logger.notice("❌ Failed to get window info")
             return nil
         }
+        
+        logger.notice("🎯 Found window: \(windowInfo.title) (\(windowInfo.ownerName))")
         
         // Start with window metadata
         var contextText = """
@@ -106,6 +117,8 @@ class ScreenCaptureService: ObservableObject {
                 }
             }) {
                 contextText += "Window Content:\n\(extractedText)"
+                // Log immediately after text extraction
+                logger.notice("✅ Captured: \(contextText)")
             }
         }
         

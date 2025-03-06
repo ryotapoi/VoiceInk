@@ -10,8 +10,8 @@ enum EnhancementMode {
 
 class AIEnhancementService: ObservableObject {
     private let logger = Logger(
-        subsystem: "com.voiceink.enhancement",
-        category: "AI"
+        subsystem: "com.prakashjoshipax.VoiceInk",
+        category: "aienhancement"
     )
     
     @Published var isEnhancementEnabled: Bool {
@@ -234,19 +234,27 @@ class AIEnhancementService: ObservableObject {
         
         // Handle Ollama requests differently
         if aiService.selectedProvider == .ollama {
-            logger.info("AI Enhancement: Using Ollama for enhancement")
+            logger.notice("📤 Request to Ollama")
+            logger.notice("🤖 System: \(systemMessage)")
+            logger.notice("📝 Sending: \(text)")
             do {
-                return try await aiService.enhanceWithOllama(text: text, systemPrompt: systemMessage)
+                let result = try await aiService.enhanceWithOllama(text: text, systemPrompt: systemMessage)
+                logger.notice("✅ Ollama enhancement successful")
+                logger.notice("📝 Received: \(result)")
+                return result
             } catch let error as LocalAIError {
-                logger.error("AI Enhancement: Ollama error - \(error.localizedDescription)")
                 switch error {
                 case .serviceUnavailable:
+                    logger.error("🔌 Ollama service unavailable")
                     throw EnhancementError.notConfigured
                 case .modelNotFound:
+                    logger.error("🤖 Ollama model not found")
                     throw EnhancementError.enhancementFailed
                 case .serverError:
+                    logger.error("🔥 Ollama server error")
                     throw EnhancementError.serverError
                 default:
+                    logger.error("❌ Ollama enhancement failed")
                     throw EnhancementError.enhancementFailed
                 }
             }
@@ -290,16 +298,13 @@ class AIEnhancementService: ObservableObject {
             request.httpBody = try? JSONSerialization.data(withJSONObject: requestBody)
             
             do {
-                logger.info("AI Enhancement: Sending request to Gemini API (attempt \(retryCount + 1))")
-                logger.debug("""
-                AI Enhancement Debug (Gemini):
-                System Message: \(systemMessage)
-                Original Text: \(text)
-                """)
+                logger.notice("📤 Request to Gemini")
+                logger.notice("🤖 System: \(systemMessage)")
+                logger.notice("📝 Sending: \(text)")
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    logger.error("AI Enhancement: Invalid response received from Gemini")
+                    logger.error("❌ Invalid Gemini response")
                     throw EnhancementError.invalidResponse
                 }
                 
@@ -312,39 +317,35 @@ class AIEnhancementService: ObservableObject {
                           let parts = content["parts"] as? [[String: Any]],
                           let firstPart = parts.first,
                           let enhancedText = firstPart["text"] as? String else {
-                        logger.error("AI Enhancement: Failed to parse Gemini API response")
+                        logger.error("❌ Failed to parse Gemini response")
                         throw EnhancementError.enhancementFailed
                     }
                     
                     let result = enhancedText.trimmingCharacters(in: .whitespacesAndNewlines)
-                    logger.info("AI Enhancement: Successfully enhanced text using Gemini")
-                    logger.debug("""
-                    AI Enhancement Debug (Gemini):
-                    Original Text: \(text)
-                    Enhanced Text: \(result)
-                    """)
+                    logger.notice("✅ Gemini enhancement successful")
+                    logger.notice("📝 Received: \(result)")
                     return result
                     
                 case 401:
-                    logger.error("AI Enhancement: Authentication failed")
+                    logger.error("🔒 Authentication failed")
                     throw EnhancementError.authenticationFailed
                     
                 case 429:
-                    logger.error("AI Enhancement: Rate limit exceeded")
+                    logger.error("⏳ Rate limit exceeded")
                     throw EnhancementError.rateLimitExceeded
                     
                 case 500...599:
-                    logger.error("AI Enhancement: Server error - Status code: \(httpResponse.statusCode)")
+                    logger.error("🔥 Server error (\(httpResponse.statusCode))")
                     throw EnhancementError.serverError
                     
                 default:
-                    logger.error("AI Enhancement: Unexpected status code: \(httpResponse.statusCode)")
+                    logger.error("❌ Unexpected status (\(httpResponse.statusCode))")
                     throw EnhancementError.apiError
                 }
             } catch let error as EnhancementError {
                 throw error
             } catch {
-                logger.error("AI Enhancement: Network error - \(error.localizedDescription)")
+                logger.error("❌ Network error: \(error.localizedDescription)")
                 
                 if retryCount < maxRetries {
                     try await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(retryCount)) * 1_000_000_000))
@@ -376,16 +377,13 @@ class AIEnhancementService: ObservableObject {
             request.httpBody = try? JSONSerialization.data(withJSONObject: requestBody)
             
             do {
-                logger.info("AI Enhancement: Sending request to Anthropic API (attempt \(retryCount + 1))")
-                logger.debug("""
-                AI Enhancement Debug (Anthropic):
-                System Message: \(systemMessage)
-                Original Text: \(text)
-                """)
+                logger.notice("📤 Request to Anthropic")
+                logger.notice("🤖 System: \(systemMessage)")
+                logger.notice("📝 Sending: \(text)")
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    logger.error("AI Enhancement: Invalid response received from Anthropic")
+                    logger.error("❌ Invalid Anthropic response")
                     throw EnhancementError.invalidResponse
                 }
                 
@@ -395,39 +393,35 @@ class AIEnhancementService: ObservableObject {
                           let content = jsonResponse["content"] as? [[String: Any]],
                           let firstContent = content.first,
                           let enhancedText = firstContent["text"] as? String else {
-                        logger.error("AI Enhancement: Failed to parse Anthropic API response")
+                        logger.error("❌ Failed to parse Anthropic response")
                         throw EnhancementError.enhancementFailed
                     }
                     
                     let result = enhancedText.trimmingCharacters(in: .whitespacesAndNewlines)
-                    logger.info("AI Enhancement: Successfully enhanced text using Anthropic")
-                    logger.debug("""
-                    AI Enhancement Debug (Anthropic):
-                    Original Text: \(text)
-                    Enhanced Text: \(result)
-                    """)
+                    logger.notice("✅ Anthropic enhancement successful")
+                    logger.notice("📝 Received: \(result)")
                     return result
                     
                 case 401:
-                    logger.error("AI Enhancement: Authentication failed")
+                    logger.error("🔒 Authentication failed")
                     throw EnhancementError.authenticationFailed
                     
                 case 429:
-                    logger.error("AI Enhancement: Rate limit exceeded")
+                    logger.error("⏳ Rate limit exceeded")
                     throw EnhancementError.rateLimitExceeded
                     
                 case 500...599:
-                    logger.error("AI Enhancement: Server error - Status code: \(httpResponse.statusCode)")
+                    logger.error("🔥 Server error (\(httpResponse.statusCode))")
                     throw EnhancementError.serverError
                     
                 default:
-                    logger.error("AI Enhancement: Unexpected status code: \(httpResponse.statusCode)")
+                    logger.error("❌ Unexpected status (\(httpResponse.statusCode))")
                     throw EnhancementError.apiError
                 }
             } catch let error as EnhancementError {
                 throw error
             } catch {
-                logger.error("AI Enhancement: Network error - \(error.localizedDescription)")
+                logger.error("❌ Network error: \(error.localizedDescription)")
                 
                 if retryCount < maxRetries {
                     try await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(retryCount)) * 1_000_000_000))
@@ -470,15 +464,16 @@ class AIEnhancementService: ObservableObject {
             request.httpBody = try? JSONSerialization.data(withJSONObject: requestBody)
             
             do {
-                logger.info("AI Enhancement: Sending request to \(self.aiService.selectedProvider.rawValue) API (attempt \(retryCount + 1))")
+                logger.notice("📤 Request to \(self.aiService.selectedProvider.rawValue)")
+                logger.notice("🤖 System: \(systemMessage)")
+                logger.notice("📝 Sending: \(text)")
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    logger.error("AI Enhancement: Invalid response received from \(self.aiService.selectedProvider.rawValue)")
+                    logger.error("❌ Invalid response")
                     throw EnhancementError.invalidResponse
                 }
                 
-                // Handle different HTTP status codes
                 switch httpResponse.statusCode {
                 case 200:
                     guard let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -486,40 +481,36 @@ class AIEnhancementService: ObservableObject {
                           let firstChoice = choices.first,
                           let message = firstChoice["message"] as? [String: Any],
                           let enhancedText = message["content"] as? String else {
-                        logger.error("AI Enhancement: Failed to parse \(self.aiService.selectedProvider.rawValue) API response")
+                        logger.error("❌ Failed to parse response")
                         throw EnhancementError.enhancementFailed
                     }
                     
                     let result = enhancedText.trimmingCharacters(in: .whitespacesAndNewlines)
-                    logger.info("AI Enhancement: Successfully enhanced text using \(self.aiService.selectedProvider.rawValue)")
-                    logger.debug("""
-                    AI Enhancement Debug:
-                    Original Text: \(text)
-                    Enhanced Text: \(result)
-                    """)
+                    logger.notice("✅ Enhancement successful")
+                    logger.notice("📝 Received: \(result)")
                     return result
                     
                 case 401:
-                    logger.error("AI Enhancement: Authentication failed")
+                    logger.error("🔒 Authentication failed")
                     throw EnhancementError.authenticationFailed
                     
                 case 429:
-                    logger.error("AI Enhancement: Rate limit exceeded")
+                    logger.error("⏳ Rate limit exceeded")
                     throw EnhancementError.rateLimitExceeded
                     
                 case 500...599:
-                    logger.error("AI Enhancement: Server error - Status code: \(httpResponse.statusCode)")
+                    logger.error("🔥 Server error (\(httpResponse.statusCode))")
                     throw EnhancementError.serverError
                     
                 default:
-                    logger.error("AI Enhancement: Unexpected status code: \(httpResponse.statusCode)")
+                    logger.error("❌ Unexpected status (\(httpResponse.statusCode))")
                     throw EnhancementError.apiError
                 }
                 
             } catch let error as EnhancementError {
                 throw error
             } catch {
-                logger.error("AI Enhancement: Network error - \(error.localizedDescription)")
+                logger.error("❌ Network error: \(error.localizedDescription)")
                 
                 if retryCount < maxRetries {
                     try await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(retryCount)) * 1_000_000_000))
