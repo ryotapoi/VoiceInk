@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import os
 
 enum BrowserType {
     case safari
@@ -81,11 +82,25 @@ enum BrowserURLError: Error {
 class BrowserURLService {
     static let shared = BrowserURLService()
     
+    private let logger = Logger(
+        subsystem: "com.prakashjoshipax.VoiceInk",
+        category: "browser.applescript"
+    )
+    
     private init() {}
     
     func getCurrentURL(from browser: BrowserType) async throws -> String {
         guard let scriptURL = Bundle.main.url(forResource: browser.scriptName, withExtension: "scpt") else {
+            logger.error("❌ AppleScript file not found: \(browser.scriptName).scpt")
             throw BrowserURLError.scriptNotFound
+        }
+        
+        logger.debug("🔍 Attempting to execute AppleScript for \(browser.displayName)")
+        
+        // Check if browser is running
+        if !isRunning(browser) {
+            logger.error("❌ Browser not running: \(browser.displayName)")
+            throw BrowserURLError.browserNotRunning
         }
         
         let task = Process()
@@ -97,19 +112,31 @@ class BrowserURLService {
         task.standardError = pipe
         
         do {
+            logger.debug("▶️ Executing AppleScript for \(browser.displayName)")
             try task.run()
             task.waitUntilExit()
             
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             if let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
                 if output.isEmpty {
+                    logger.error("❌ Empty output from AppleScript for \(browser.displayName)")
                     throw BrowserURLError.noActiveTab
                 }
+                
+                // Check if output contains error messages
+                if output.lowercased().contains("error") {
+                    logger.error("❌ AppleScript error for \(browser.displayName): \(output)")
+                    throw BrowserURLError.executionFailed
+                }
+                
+                logger.debug("✅ Successfully retrieved URL from \(browser.displayName): \(output)")
                 return output
             } else {
+                logger.error("❌ Failed to decode output from AppleScript for \(browser.displayName)")
                 throw BrowserURLError.executionFailed
             }
         } catch {
+            logger.error("❌ AppleScript execution failed for \(browser.displayName): \(error.localizedDescription)")
             throw BrowserURLError.executionFailed
         }
     }
@@ -117,6 +144,8 @@ class BrowserURLService {
     func isRunning(_ browser: BrowserType) -> Bool {
         let workspace = NSWorkspace.shared
         let runningApps = workspace.runningApplications
-        return runningApps.contains { $0.bundleIdentifier == browser.bundleIdentifier }
+        let isRunning = runningApps.contains { $0.bundleIdentifier == browser.bundleIdentifier }
+        logger.debug("\(browser.displayName) running status: \(isRunning)")
+        return isRunning
     }
 } 

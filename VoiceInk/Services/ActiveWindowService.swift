@@ -1,11 +1,17 @@
 import Foundation
 import AppKit
+import os
 
 class ActiveWindowService: ObservableObject {
     static let shared = ActiveWindowService()
     @Published var currentApplication: NSRunningApplication?
     private var enhancementService: AIEnhancementService?
     private let browserURLService = BrowserURLService.shared
+    
+    private let logger = Logger(
+        subsystem: "com.prakashjoshipax.VoiceInk",
+        category: "browser.detection"
+    )
     
     private init() {}
     
@@ -30,26 +36,27 @@ class ActiveWindowService: ObservableObject {
         
         // Check if the current app is a supported browser
         if let browserType = BrowserType.allCases.first(where: { $0.bundleIdentifier == bundleIdentifier }) {
-            print("🌐 Detected Browser: \(browserType.displayName)")
+            logger.debug("🌐 Detected Browser: \(browserType.displayName)")
             
             do {
                 // Try to get the current URL
+                logger.debug("📝 Attempting to get URL from \(browserType.displayName)")
                 let currentURL = try await browserURLService.getCurrentURL(from: browserType)
-                print("📍 Current URL: \(currentURL)")
+                logger.debug("📍 Successfully got URL: \(currentURL)")
                 
                 // Check for URL-specific configuration
                 if let (config, urlConfig) = PowerModeManager.shared.getConfigurationForURL(currentURL) {
-                    print("⚙️ Found URL Configuration: \(config.appName) - URL: \(urlConfig.url)")
+                    logger.debug("⚙️ Found URL Configuration: \(config.appName) - URL: \(urlConfig.url)")
                     // Apply URL-specific configuration
                     var updatedConfig = config
                     updatedConfig.selectedPrompt = urlConfig.promptId
                     await applyConfiguration(updatedConfig)
                     return
                 } else {
-                    print("📝 No URL configuration found for: \(currentURL)")
+                    logger.debug("📝 No URL configuration found for: \(currentURL)")
                 }
             } catch {
-                print("❌ Failed to get URL from \(browserType.displayName): \(error)")
+                logger.error("❌ Failed to get URL from \(browserType.displayName): \(error.localizedDescription)")
             }
         }
         
