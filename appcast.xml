@@ -3,19 +3,21 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>0.98</title>
+            <title>0.99</title>
             <pubDate>Thu, 3 Mar 2025 07:51:55 +0545</pubDate>
-            <sparkle:version>98</sparkle:version>
-            <sparkle:shortVersionString>0.98</sparkle:shortVersionString>
+            <sparkle:version>99</sparkle:version>
+            <sparkle:shortVersionString>0.99</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                    <h3>What's New in Version 0.98 🚀⚡</h3>
+                    <h3>What's New in Version 0.99 🚀⚡</h3>
                         <ul>
-                            <li>Fixed Clipboard issue </li>
-                            <li>Minor Fixes to make the app faster</li>
+                            <li>Fixed hallucinations during silent audio(not completely, but improved a lot)</li>
+                            <li>Fixed Apps from subfolders not showing up on Power Mode</li>
+                            <li>Added Debug for AI Enhancement & Screen Capture</li>
+                            <li>Minor Improvements & bug fixes</li>
                         </ul>
             ]]></description>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v0.98/VoiceInk.dmg" length="5707061" type="application/octet-stream" sparkle:edSignature="DIgZhiN4PUZOfOKVoRyNFhCU2ibH5vncvXBF0Mc+3NSXtMIXumHlcP9zMBcZG6jUEjQOS3xCqBxVrSWWZ0kIAw=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v0.92/VoiceInk.dmg" length="5709259" type="application/octet-stream" sparkle:edSignature="A6nMnJf9/3iAbmPBHg5MOMXIQh9zA8u0d4sVJ1wbsIEDyHl7Gmp52v/xvaax27zjR1x7O7/DgFV5d3+YXVBUCQ=="/>
         </item>
     </channel>
 </rss>
