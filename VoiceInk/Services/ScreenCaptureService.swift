@@ -176,7 +176,7 @@ class ScreenCaptureService: ObservableObject {
         
         // Try multiple times to get a successful capture
         for attempt in 1...maxCaptureRetries {
-            logger.notice("🔄 Capture attempt \(attempt, privacy: .public) of \(maxCaptureRetries, privacy: .public)")
+            logger.notice("🔄 Capture attempt \(attempt, privacy: .public) of \(self.maxCaptureRetries, privacy: .public)")
             
             // First get window info
             guard let windowInfo = getActiveWindowInfo() else {
