@@ -235,12 +235,12 @@ class AIEnhancementService: ObservableObject {
         // Handle Ollama requests differently
         if aiService.selectedProvider == .ollama {
             logger.notice("📤 Request to Ollama")
-            logger.notice("🤖 System: \(systemMessage)")
-            logger.notice("📝 Sending: \(text)")
+            logger.notice("🤖 System: \(systemMessage, privacy: .public)")
+            logger.notice("📝 Sending: \(text, privacy: .public)")
             do {
                 let result = try await aiService.enhanceWithOllama(text: text, systemPrompt: systemMessage)
                 logger.notice("✅ Ollama enhancement successful")
-                logger.notice("📝 Received: \(result)")
+                logger.notice("📝 Received: \(result, privacy: .public)")
                 return result
             } catch let error as LocalAIError {
                 switch error {
@@ -299,8 +299,8 @@ class AIEnhancementService: ObservableObject {
             
             do {
                 logger.notice("📤 Request to Gemini")
-                logger.notice("🤖 System: \(systemMessage)")
-                logger.notice("📝 Sending: \(text)")
+                logger.notice("🤖 System: \(systemMessage, privacy: .public)")
+                logger.notice("📝 Sending: \(text, privacy: .public)")
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
@@ -323,7 +323,7 @@ class AIEnhancementService: ObservableObject {
                     
                     let result = enhancedText.trimmingCharacters(in: .whitespacesAndNewlines)
                     logger.notice("✅ Gemini enhancement successful")
-                    logger.notice("📝 Received: \(result)")
+                    logger.notice("📝 Received: \(result, privacy: .public)")
                     return result
                     
                 case 401:
@@ -378,8 +378,8 @@ class AIEnhancementService: ObservableObject {
             
             do {
                 logger.notice("📤 Request to Anthropic")
-                logger.notice("🤖 System: \(systemMessage)")
-                logger.notice("📝 Sending: \(text)")
+                logger.notice("🤖 System: \(systemMessage, privacy: .public)")
+                logger.notice("📝 Sending: \(text, privacy: .public)")
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
@@ -399,7 +399,7 @@ class AIEnhancementService: ObservableObject {
                     
                     let result = enhancedText.trimmingCharacters(in: .whitespacesAndNewlines)
                     logger.notice("✅ Anthropic enhancement successful")
-                    logger.notice("📝 Received: \(result)")
+                    logger.notice("📝 Received: \(result, privacy: .public)")
                     return result
                     
                 case 401:
@@ -464,9 +464,9 @@ class AIEnhancementService: ObservableObject {
             request.httpBody = try? JSONSerialization.data(withJSONObject: requestBody)
             
             do {
-                logger.notice("📤 Request to \(self.aiService.selectedProvider.rawValue)")
-                logger.notice("🤖 System: \(systemMessage)")
-                logger.notice("📝 Sending: \(text)")
+                logger.notice("📤 Request to \(self.aiService.selectedProvider.rawValue, privacy: .public)")
+                logger.notice("🤖 System: \(systemMessage, privacy: .public)")
+                logger.notice("📝 Sending: \(text, privacy: .public)")
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
@@ -487,7 +487,7 @@ class AIEnhancementService: ObservableObject {
                     
                     let result = enhancedText.trimmingCharacters(in: .whitespacesAndNewlines)
                     logger.notice("✅ Enhancement successful")
-                    logger.notice("📝 Received: \(result)")
+                    logger.notice("📝 Received: \(result, privacy: .public)")
                     return result
                     
                 case 401:
@@ -542,9 +542,22 @@ class AIEnhancementService: ObservableObject {
     func captureScreenContext() async {
         // Only check for screen capture context toggle
         guard useScreenCaptureContext else { 
+            logger.notice("📷 Screen capture context is disabled")
             return 
         }
-        _ = await screenCaptureService.captureAndExtractText()
+        
+        logger.notice("📷 Initiating screen capture for context")
+        // Wait for the screen capture to complete and check result
+        if let capturedText = await screenCaptureService.captureAndExtractText() {
+            logger.notice("📷 Screen capture successful, got \(capturedText.count, privacy: .public) characters")
+            // Ensure we're on the main thread when updating published properties
+            await MainActor.run {
+                // Manually trigger objectWillChange to ensure UI updates
+                self.objectWillChange.send()
+            }
+        } else {
+            logger.notice("📷 Screen capture failed or returned empty result")
+        }
     }
     
     // MARK: - Prompt Management
