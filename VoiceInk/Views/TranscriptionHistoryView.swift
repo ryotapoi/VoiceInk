@@ -10,22 +10,37 @@ struct TranscriptionHistoryView: View {
     
     // Pagination states
     @State private var displayedTranscriptions: [Transcription] = []
-    @State private var currentPage = 0
-    private let pageSize = 20
-    @State private var hasMoreContent = true
     @State private var isLoading = false
-    @State private var totalCount: Int = 0
+    @State private var hasMoreContent = true
     
-    // Add a Query for latest transcriptions
-    @Query(sort: \Transcription.timestamp, order: .reverse) private var latestTranscriptions: [Transcription]
+    // Cursor-based pagination - track the last timestamp
+    @State private var lastTimestamp: Date?
+    private let pageSize = 20
     
-    // Optimized query descriptor
-    private var queryDescriptor: FetchDescriptor<Transcription> {
+    // Query for latest transcriptions (used only for monitoring new additions)
+    @Query(sort: \Transcription.timestamp, order: .reverse) 
+    private var latestTranscriptions: [Transcription]
+    
+    // Cursor-based query descriptor
+    private func cursorQueryDescriptor(after timestamp: Date? = nil) -> FetchDescriptor<Transcription> {
         var descriptor = FetchDescriptor<Transcription>(
             sortBy: [SortDescriptor(\Transcription.timestamp, order: .reverse)]
         )
         
-        if !searchText.isEmpty {
+        // Build the predicate based on search text and timestamp cursor
+        if let timestamp = timestamp {
+            if !searchText.isEmpty {
+                descriptor.predicate = #Predicate<Transcription> { transcription in
+                    (transcription.text.localizedStandardContains(searchText) ||
+                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)) &&
+                    transcription.timestamp < timestamp
+                }
+            } else {
+                descriptor.predicate = #Predicate<Transcription> { transcription in
+                    transcription.timestamp < timestamp
+                }
+            }
+        } else if !searchText.isEmpty {
             descriptor.predicate = #Predicate<Transcription> { transcription in
                 transcription.text.localizedStandardContains(searchText) ||
                 (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)
@@ -33,22 +48,6 @@ struct TranscriptionHistoryView: View {
         }
         
         descriptor.fetchLimit = pageSize
-        descriptor.fetchOffset = currentPage * pageSize
-        
-        return descriptor
-    }
-    
-    // Optimized count descriptor
-    private var countDescriptor: FetchDescriptor<Transcription> {
-        var descriptor = FetchDescriptor<Transcription>()
-        
-        if !searchText.isEmpty {
-            descriptor.predicate = #Predicate<Transcription> { transcription in
-                transcription.text.localizedStandardContains(searchText) ||
-                (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)
-            }
-        }
-        
         return descriptor
     }
     
@@ -82,7 +81,7 @@ struct TranscriptionHistoryView: View {
                         
                         if hasMoreContent {
                             Button(action: {
-                                loadMoreContentIfNeeded()
+                                loadMoreContent()
                             }) {
                                 HStack(spacing: 8) {
                                     if isLoading {
@@ -131,7 +130,7 @@ struct TranscriptionHistoryView: View {
                 await loadInitialContent()
             }
         }
-        // Add onChange handler for latestTranscriptions
+        // Monitor for new transcriptions
         .onChange(of: latestTranscriptions) { _, newTranscriptions in
             handleNewTranscriptions(newTranscriptions)
         }
@@ -178,7 +177,7 @@ struct TranscriptionHistoryView: View {
             }
             .buttonStyle(.bordered)
             
-            if selectedTranscriptions.count < totalCount {
+            if selectedTranscriptions.count < displayedTranscriptions.count {
                 Button("Select All") {
                     Task {
                         await selectAllTranscriptions()
@@ -201,52 +200,55 @@ struct TranscriptionHistoryView: View {
         defer { isLoading = false }
         
         do {
-            // Get total count for pagination
-            totalCount = try modelContext.fetchCount(countDescriptor)
+            // Reset cursor
+            lastTimestamp = nil
             
-            // Fetch initial page
-            currentPage = 0
-            let items = try modelContext.fetch(queryDescriptor)
+            // Fetch initial page without a cursor
+            let items = try modelContext.fetch(cursorQueryDescriptor())
             
             await MainActor.run {
                 displayedTranscriptions = items
-                hasMoreContent = items.count == pageSize && totalCount > pageSize
+                // Update cursor to the timestamp of the last item
+                lastTimestamp = items.last?.timestamp
+                // If we got fewer items than the page size, there are no more items
+                hasMoreContent = items.count == pageSize
             }
         } catch {
             print("Error loading transcriptions: \(error)")
         }
     }
     
-    private func loadMoreContentIfNeeded() {
-        guard !isLoading && hasMoreContent else { return }
+    private func loadMoreContent() {
+        guard !isLoading, hasMoreContent, let lastTimestamp = lastTimestamp else { return }
         
         Task {
             isLoading = true
             defer { isLoading = false }
             
             do {
-                currentPage += 1
-                let newItems = try modelContext.fetch(queryDescriptor)
+                // Fetch next page using the cursor
+                let newItems = try modelContext.fetch(cursorQueryDescriptor(after: lastTimestamp))
                 
                 await MainActor.run {
+                    // Append new items to the displayed list
                     displayedTranscriptions.append(contentsOf: newItems)
-                    hasMoreContent = newItems.count == pageSize && 
-                        displayedTranscriptions.count < totalCount
+                    // Update cursor to the timestamp of the last new item
+                    self.lastTimestamp = newItems.last?.timestamp
+                    // If we got fewer items than the page size, there are no more items
+                    hasMoreContent = newItems.count == pageSize
                 }
             } catch {
                 print("Error loading more transcriptions: \(error)")
-                currentPage -= 1
             }
         }
     }
     
     private func resetPagination() async {
         await MainActor.run {
-            currentPage = 0
             displayedTranscriptions = []
+            lastTimestamp = nil
             hasMoreContent = true
             isLoading = false
-            totalCount = 0
         }
     }
     
@@ -303,29 +305,24 @@ struct TranscriptionHistoryView: View {
         }
     }
     
-    // Add new function to handle latest transcriptions
+    // Simplified function to handle new transcriptions
     private func handleNewTranscriptions(_ newTranscriptions: [Transcription]) {
-        Task {
-            // Get the current total count
-            if let count = try? modelContext.fetchCount(countDescriptor) {
-                totalCount = count
-            }
-            
-            // Only update if we're on the first page and not searching
-            if currentPage == 0 && searchText.isEmpty {
-                // Take only the first pageSize items to maintain pagination
-                let newDisplayed = Array(newTranscriptions.prefix(pageSize))
-                displayedTranscriptions = newDisplayed
-                hasMoreContent = newTranscriptions.count > pageSize
+        // Only update if we're on the first page and not searching
+        // Only check the first item since we only care about the newest one
+        if lastTimestamp == nil && searchText.isEmpty && !newTranscriptions.isEmpty {
+            Task {
+                await loadInitialContent()
             }
         }
     }
     
-    // Add new function to select all transcriptions
+    // Modified function to select all transcriptions in the database
     private func selectAllTranscriptions() async {
         do {
-            // Create a descriptor without pagination limits
+            // Create a descriptor without pagination limits to get all IDs
             var allDescriptor = FetchDescriptor<Transcription>()
+            
+            // Apply search filter if needed
             if !searchText.isEmpty {
                 allDescriptor.predicate = #Predicate<Transcription> { transcription in
                     transcription.text.localizedStandardContains(searchText) ||
@@ -333,9 +330,27 @@ struct TranscriptionHistoryView: View {
                 }
             }
             
-            // Fetch all transcriptions
+            // For better performance, only fetch the IDs
+            allDescriptor.propertiesToFetch = [\.id]
+            
+            // Fetch all matching transcriptions
             let allTranscriptions = try modelContext.fetch(allDescriptor)
-            selectedTranscriptions = Set(allTranscriptions)
+            
+            // Create a set of all visible transcriptions for quick lookup
+            let visibleIds = Set(displayedTranscriptions.map { $0.id })
+            
+            // Add all transcriptions to the selection
+            await MainActor.run {
+                // First add all visible transcriptions directly
+                selectedTranscriptions = Set(displayedTranscriptions)
+                
+                // Then add any non-visible transcriptions by ID
+                for transcription in allTranscriptions {
+                    if !visibleIds.contains(transcription.id) {
+                        selectedTranscriptions.insert(transcription)
+                    }
+                }
+            }
         } catch {
             print("Error selecting all transcriptions: \(error)")
         }
