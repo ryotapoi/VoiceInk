@@ -3,21 +3,22 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>1.0</title>
-            <pubDate>Thu, 7 Mar 2025 07:51:55 +0545</pubDate>
-            <sparkle:version>100</sparkle:version>
-            <sparkle:shortVersionString>1.0</sparkle:shortVersionString>
+            <title>1.1</title>
+            <pubDate>Thu, 12 Mar 2025 07:51:55 +0545</pubDate>
+            <sparkle:version>110</sparkle:version>
+            <sparkle:shortVersionString>1.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                    <h3>What's New in Version 1.0 🚀⚡</h3>
-                        <ul>
-                            <li>Added proper debugging in crucial places</li>
-                            <li>Added more menubar options</li>
-                            <li>Added Debug for AI Enhancement & Screen Capture</li>
-                            <li>Minor Improvements & bug fixes</li>
-                        </ul>
+                    <h3>What's New in Version 1.1 🚀⚡</h3>
+                        <ol>
+                            <li>🗑️ Added the option to delete past audio recordings</li>
+                            <li>⌨️ Added support for right shift key for push-to-talk</li>
+                            <li>📁 Migrated Whisper models location to Application Support Folder</li>
+                            <li>🎙️ Fixed push-to-talk key to support both push-to-talk and quick toggle feature</li>
+                            <li>🔧 Minor fixes and improvements</li>
+                        </ol>
             ]]></description>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.0/VoiceInk.dmg" length="5720684" type="application/octet-stream" sparkle:edSignature="ZU/GEazjiwdyh62DjYs6ckRxINkzhGYfdtdiYL34z1OHWK2CcLUl5FlnucvoOWbm28DTkeYvJeDrYSN7TTYhAQ=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.1/VoiceInk.dmg" length="5771300" type="application/octet-stream" sparkle:edSignature="1AsaqH7CXvUEhEJQJcP8ZNYmq3pXSuh5RfE+vRahTdVoYuu7u6c2RJNNuTifUEMJvO04ABPaLFRnu/fM2w+CCA=="/>
         </item>
     </channel>
 </rss>
