@@ -231,6 +231,8 @@ struct RecordView: View {
             keyName = "Fn"
         case .rightCommand:
             keyName = "right Command (⌘)"
+        case .rightShift:
+            keyName = "right Shift (⇧)"
         }
         
         let activateDescription = hotkeyManager.isPushToTalkEnabled ?

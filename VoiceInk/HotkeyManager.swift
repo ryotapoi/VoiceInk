@@ -30,6 +30,7 @@ class HotkeyManager: ObservableObject {
                 isRightOptionKeyPressed = false
                 isFnKeyPressed = false
                 isRightCommandKeyPressed = false
+                isRightShiftKeyPressed = false
             }
             setupKeyMonitors()
         }
@@ -40,6 +41,7 @@ class HotkeyManager: ObservableObject {
             isRightOptionKeyPressed = false
             isFnKeyPressed = false
             isRightCommandKeyPressed = false
+            isRightShiftKeyPressed = false
         }
     }
     
@@ -47,6 +49,7 @@ class HotkeyManager: ObservableObject {
     private var isRightOptionKeyPressed = false
     private var isFnKeyPressed = false
     private var isRightCommandKeyPressed = false
+    private var isRightShiftKeyPressed = false
     private var localKeyMonitor: Any?
     private var globalKeyMonitor: Any?
     private var visibilityTask: Task<Void, Never>?
@@ -59,12 +62,14 @@ class HotkeyManager: ObservableObject {
         case rightOption = "rightOption"
         case fn = "fn"
         case rightCommand = "rightCommand"
+        case rightShift = "rightShift"
         
         var displayName: String {
             switch self {
             case .rightOption: return "Right Option (⌥)"
             case .fn: return "Fn"
             case .rightCommand: return "Right Command (⌘)"
+            case .rightShift: return "Right Shift (⇧)"
             }
         }
     }
@@ -281,6 +286,11 @@ class HotkeyManager: ObservableObject {
             keyState = event.modifierFlags.contains(.command) && event.keyCode == 0x36
             guard keyState != isRightCommandKeyPressed else { return }
             isRightCommandKeyPressed = keyState
+            
+        case .rightShift:
+            keyState = event.modifierFlags.contains(.shift) && event.keyCode == 0x3C
+            guard keyState != isRightShiftKeyPressed else { return }
+            isRightShiftKeyPressed = keyState
         }
         
         // Toggle recording based on key state

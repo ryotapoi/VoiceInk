@@ -204,6 +204,8 @@ struct SettingsView: View {
             return "Using Function (Fn) key to quickly start recording. Release to stop."
         case .rightCommand:
             return "Using Right Command (⌘) key to quickly start recording. Release to stop."
+        case .rightShift:
+            return "Using Right Shift (⇧) key to quickly start recording. Release to stop."
         }
     }
 }
@@ -306,6 +308,7 @@ struct PushToTalkKeySelector: View {
         case .rightOption: return "⌥"
         case .fn: return "Fn"
         case .rightCommand: return "⌘"
+        case .rightShift: return "⇧"
         }
     }
     
@@ -314,6 +317,7 @@ struct PushToTalkKeySelector: View {
         case .rightOption: return "Right Option"
         case .fn: return "Function"
         case .rightCommand: return "Right Command"
+        case .rightShift: return "Right Shift"
         }
     }
 }
