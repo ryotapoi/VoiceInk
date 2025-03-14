@@ -90,7 +90,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
            let savedModel = availableModels.first(where: { $0.name == savedModelName }) {
             currentModel = savedModel
         }
-        
         Task {
             await migrateModelsIfNeeded()
         }
@@ -147,6 +146,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     private func loadModel(_ model: WhisperModel) async throws {
         guard whisperContext == nil else { return }
         
+        logger.notice("🔄 Loading Whisper model: \(model.name)")
         isModelLoading = true
         defer { isModelLoading = false }
         
@@ -154,7 +154,9 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             whisperContext = try await WhisperContext.createContext(path: model.url.path)
             isModelLoaded = true
             currentModel = model
+            logger.notice("✅ Successfully loaded model: \(model.name)")
         } catch {
+            logger.error("❌ Failed to load model: \(model.name) - \(error.localizedDescription)")
             throw WhisperStateError.modelLoadFailed
         }
     }
@@ -172,14 +174,18 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
 
     func toggleRecord() async {
         if isRecording {
+            logger.notice("🛑 Stopping recording")
             await recorder.stopRecording()
             isRecording = false
             isVisualizerActive = false
             if let recordedFile {
                 let duration = Date().timeIntervalSince(transcriptionStartTime ?? Date())
                 await transcribeAudio(recordedFile, duration: duration)
+            } else {
+                logger.error("❌ No recorded file found after stopping recording")
             }
         } else {
+            logger.notice("🎙️ Starting recording")
             requestRecordPermission { [self] granted in
                 if granted {
                     Task {
@@ -216,9 +222,11 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     
     private func performBackgroundTasks() async {
         if let currentModel = self.currentModel, self.whisperContext == nil {
+            logger.notice("🔄 Preloading model in background: \(currentModel.name)")
             do {
                 try await self.loadModel(currentModel)
             } catch {
+                logger.error("❌ Background model preloading failed: \(error.localizedDescription)")
                 await MainActor.run {
                     self.messageLog += "Error preloading model: \(error.localizedDescription)\n"
                 }
@@ -274,6 +282,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     func downloadModel(_ model: PredefinedModel) async {
         guard let url = URL(string: model.downloadURL) else { return }
 
+        logger.notice("🔽 Downloading model: \(model.name)")
         do {
             let (data, response) = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<(Data, URLResponse), Error>) in
                 let task = URLSession.shared.dataTask(with: url) { data, response, error in
@@ -312,7 +321,9 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
 
             availableModels.append(WhisperModel(name: model.name, url: destinationURL))
             self.downloadProgress.removeValue(forKey: model.name)
+            logger.notice("✅ Successfully downloaded model: \(model.name)")
         } catch {
+            logger.error("❌ Failed to download model: \(model.name) - \(error.localizedDescription)")
             currentError = .modelDownloadFailed
             self.downloadProgress.removeValue(forKey: model.name)
         }
@@ -322,17 +333,20 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         if shouldCancelRecording { return }
 
         guard let currentModel = currentModel else {
+            logger.error("❌ Cannot transcribe: No model selected")
             messageLog += "Cannot transcribe: No model selected.\n"
             currentError = .modelLoadFailed
             return
         }
 
         guard let whisperContext = whisperContext else {
+            logger.error("❌ Cannot transcribe: Model not loaded")
             messageLog += "Cannot transcribe: Model not loaded.\n"
             currentError = .modelLoadFailed
             return
         }
 
+        logger.notice("🔄 Starting transcription with model: \(currentModel.name)")
         do {
             isProcessing = true
             isTranscribing = true
@@ -372,6 +386,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             
             var text = await whisperContext.getTranscription()
             text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            logger.notice("✅ Transcription completed successfully, length: \(text.count) characters")
             
             if let enhancementService = enhancementService,
                enhancementService.isEnhancementEnabled,
@@ -482,7 +497,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 canTranscribe = false
             }
         } catch {
-            print("Error deleting model: \(error.localizedDescription)")
             messageLog += "Error deleting model: \(error.localizedDescription)\n"
             currentError = .modelDeletionFailed
         }
@@ -524,7 +538,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     }
 
     private func showRecorderPanel() {
-        logger.info("Showing recorder panel, type: \(self.recorderType)")
+        logger.notice("📱 Showing \(recorderType) recorder")
         if recorderType == "notch" {
             if notchWindowManager == nil {
                 notchWindowManager = NotchWindowManager(whisperState: self, recorder: recorder)
@@ -538,7 +552,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             }
             miniWindowManager?.show()
         }
-        logger.info("Recorder panel shown successfully")
     }
 
     private func hideRecorderPanel() {
@@ -568,6 +581,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
 
     private func cleanupResources() async {
         if !isRecording && !isProcessing {
+            logger.notice("🧹 Cleaning up Whisper resources")
             await whisperContext?.releaseResources()
             whisperContext = nil
             isModelLoaded = false
@@ -575,6 +589,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     }
 
     func dismissMiniRecorder() async {
+        logger.notice("📱 Dismissing \(recorderType) recorder")
         shouldCancelRecording = true
         if isRecording {
             await recorder.stopRecording()

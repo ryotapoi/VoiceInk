@@ -4,6 +4,7 @@ import whisper
 #else
 #error("Unable to import whisper module. Please check your project configuration.")
 #endif
+import os
 
 enum WhisperError: Error {
     case couldNotInitializeContext
@@ -15,6 +16,7 @@ actor WhisperContext {
     private var languageCString: [CChar]?
     private var prompt: String?
     private var promptCString: [CChar]?
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "WhisperContext")
 
     private init() {
         // Private initializer without context
@@ -35,7 +37,6 @@ actor WhisperContext {
         
         // Leave 2 processors free (i.e. the high-efficiency cores).
         let maxThreads = max(1, min(8, cpuCount() - 2))
-        print("Selecting \(maxThreads) threads")
         var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
         
         // Read language directly from UserDefaults
@@ -45,11 +46,11 @@ actor WhisperContext {
             params.language = languageCString?.withUnsafeBufferPointer { ptr in
                 ptr.baseAddress
             }
-            print("Setting language to: \(selectedLanguage)")
+            logger.notice("🌐 Using language: \(selectedLanguage)")
         } else {
             languageCString = nil
             params.language = nil
-            print("Using auto-detection")
+            logger.notice("🌐 Using auto language detection")
         }
         
         // Only use prompt for English language
@@ -58,15 +59,10 @@ actor WhisperContext {
             params.initial_prompt = promptCString?.withUnsafeBufferPointer { ptr in
                 ptr.baseAddress
             }
-            print("Using prompt for English transcription: \(prompt!)")
+            logger.notice("💬 Using prompt for transcription")
         } else {
             promptCString = nil
             params.initial_prompt = nil
-            if selectedLanguage == "en" {
-                print("No prompt set for English")
-            } else {
-                print("Prompt disabled for non-English language")
-            }
         }
         
         // Adapted from whisper.objc
@@ -85,15 +81,15 @@ actor WhisperContext {
         params.suppress_nst     = true      // Additional suppression of non-speech tokens
 
         whisper_reset_timings(context)
-        print("About to run whisper_full")
+        logger.notice("⚙️ Starting whisper transcription")
         samples.withUnsafeBufferPointer { samples in
             if (whisper_full(context, params, samples.baseAddress, Int32(samples.count)) != 0) {
-                print("Failed to run the model")
+                logger.error("❌ Failed to run whisper model")
             } else {
                 // Print detected language info before timings
                 let langId = whisper_full_lang_id(context)
                 let detectedLang = String(cString: whisper_lang_str(langId))
-                print("Transcription completed - Selected: \(selectedLanguage), Used: \(detectedLang)")
+                logger.notice("✅ Transcription completed - Language: \(detectedLang)")
                 whisper_print_timings(context)
             }
         }
@@ -125,14 +121,14 @@ actor WhisperContext {
         var params = whisper_context_default_params()
         #if targetEnvironment(simulator)
         params.use_gpu = false
-        print("Running on the simulator, using CPU")
+        logger.notice("🖥️ Running on simulator, using CPU")
         #endif
         
         let context = whisper_init_from_file_with_params(path, params)
         if let context {
             self.context = context
         } else {
-            print("Couldn't load model at \(path)")
+            logger.error("❌ Couldn't load model at \(path)")
             throw WhisperError.couldNotInitializeContext
         }
     }
@@ -147,7 +143,7 @@ actor WhisperContext {
 
     func setPrompt(_ prompt: String?) {
         self.prompt = prompt
-        print("Prompt set to: \(prompt ?? "none")")
+        logger.debug("💬 Prompt set: \(prompt ?? "none")")
     }
 }
 
