@@ -3,22 +3,20 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>1.1</title>
-            <pubDate>Thu, 12 Mar 2025 07:51:55 +0545</pubDate>
-            <sparkle:version>110</sparkle:version>
-            <sparkle:shortVersionString>1.1</sparkle:shortVersionString>
+            <title>1.11</title>
+            <pubDate>Thu, 14 Mar 2025 07:51:55 +0545</pubDate>
+            <sparkle:version>111</sparkle:version>
+            <sparkle:shortVersionString>1.11</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                    <h3>What's New in Version 1.1 🚀⚡</h3>
+                    <h3>What's New in Version 1.11 🚀⚡</h3>
                         <ol>
-                            <li>🗑️ Added the option to delete past audio recordings</li>
-                            <li>⌨️ Added support for right shift key for push-to-talk</li>
-                            <li>📁 Migrated Whisper models location to Application Support Folder</li>
-                            <li>🎙️ Fixed push-to-talk key to support both push-to-talk and quick toggle feature</li>
-                            <li>🔧 Minor fixes and improvements</li>
+                            <li>🌐 Added Language selection option in menu bar</li>
+                            <li>⚙️ Properly handling model loading </li>
+                            <li>🐛 Fixed minor bugs and issues</li>
                         </ol>
             ]]></description>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.1/VoiceInk.dmg" length="5771300" type="application/octet-stream" sparkle:edSignature="1AsaqH7CXvUEhEJQJcP8ZNYmq3pXSuh5RfE+vRahTdVoYuu7u6c2RJNNuTifUEMJvO04ABPaLFRnu/fM2w+CCA=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.11/VoiceInk.dmg" length="5773359" type="application/octet-stream" sparkle:edSignature="dNxDffIJpj9WmGmONmFuUKuE+yfvM1znuMSc+8YWEh+PZy2YwDdft2ihhtG49n3w63oAL1s/rH0j89SgQDEEAw=="/>
         </item>
     </channel>
 </rss>
