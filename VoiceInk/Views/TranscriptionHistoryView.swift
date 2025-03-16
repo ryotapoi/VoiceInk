@@ -17,8 +17,8 @@ struct TranscriptionHistoryView: View {
     @State private var lastTimestamp: Date?
     private let pageSize = 20
     
-    // Query for latest transcriptions (used only for monitoring new additions)
-    @Query(sort: \Transcription.timestamp, order: .reverse) 
+    // Query for latest transcriptions (used for real-time updates)
+    @Query(sort: \Transcription.timestamp, order: .reverse, animation: .default) 
     private var latestTranscriptions: [Transcription]
     
     // Cursor-based query descriptor
@@ -130,9 +130,27 @@ struct TranscriptionHistoryView: View {
                 await loadInitialContent()
             }
         }
-        // Monitor for new transcriptions
-        .onChange(of: latestTranscriptions) { _, newTranscriptions in
-            handleNewTranscriptions(newTranscriptions)
+        // Improved change detection for new transcriptions
+        .onChange(of: latestTranscriptions) { oldValue, newValue in
+            // Check if a new transcription was added
+            if !newValue.isEmpty && (oldValue.isEmpty || newValue[0].id != oldValue[0].id) {
+                // Only refresh if we're on the first page (no pagination cursor set)
+                if lastTimestamp == nil {
+                    Task {
+                        await loadInitialContent()
+                    }
+                } else {
+                    // If we're on a paginated view, show a notification or indicator that new content is available
+                    // This could be a banner or button to "Show new transcriptions"
+                    withAnimation {
+                        // Reset pagination to show the latest content
+                        Task {
+                            await resetPagination()
+                            await loadInitialContent()
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -302,17 +320,6 @@ struct TranscriptionHistoryView: View {
             selectedTranscriptions.remove(transcription)
         } else {
             selectedTranscriptions.insert(transcription)
-        }
-    }
-    
-    // Simplified function to handle new transcriptions
-    private func handleNewTranscriptions(_ newTranscriptions: [Transcription]) {
-        // Only update if we're on the first page and not searching
-        // Only check the first item since we only care about the newest one
-        if lastTimestamp == nil && searchText.isEmpty && !newTranscriptions.isEmpty {
-            Task {
-                await loadInitialContent()
-            }
         }
     }
     
