@@ -103,6 +103,12 @@ class AudioTranscriptionService: ObservableObject {
             text = text.trimmingCharacters(in: .whitespacesAndNewlines)
             logger.notice("✅ Retranscription completed successfully, length: \(text.count) characters")
             
+            // Apply word replacements if enabled
+            if UserDefaults.standard.bool(forKey: "IsWordReplacementEnabled") {
+                text = WordReplacementService.shared.applyReplacements(to: text)
+                logger.notice("✅ Word replacements applied")
+            }
+            
             // Apply AI enhancement if enabled - using the same enhancement service as WhisperState
             if let enhancementService = enhancementService,
                enhancementService.isEnhancementEnabled,

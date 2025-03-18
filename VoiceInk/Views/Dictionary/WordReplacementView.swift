@@ -7,8 +7,15 @@ class WordReplacementManager: ObservableObject {
         }
     }
     
+    @Published var isEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isEnabled, forKey: "IsWordReplacementEnabled")
+        }
+    }
+    
     init() {
         self.replacements = UserDefaults.standard.dictionary(forKey: "wordReplacements") as? [String: String] ?? [:]
+        self.isEnabled = UserDefaults.standard.bool(forKey: "IsWordReplacementEnabled")
     }
     
     func addReplacement(original: String, replacement: String) {
@@ -28,17 +35,26 @@ struct WordReplacementView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // Info Section
+            // Info Section with Toggle
             GroupBox {
-                Label {
-                    Text("Define word replacements to automatically replace specific words or phrases during AI enhancement")
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(alignment: .leading)
-                } icon: {
-                    Image(systemName: "info.circle.fill")
-                        .foregroundColor(.blue)
+                HStack {
+                    Label {
+                        Text("Define word replacements to automatically replace specific words or phrases")
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(alignment: .leading)
+                    } icon: {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(.blue)
+                    }
+                    
+                    Spacer()
+                    
+                    Toggle("Enable", isOn: $manager.isEnabled)
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                        .help("Enable automatic word replacement after transcription")
                 }
             }
             

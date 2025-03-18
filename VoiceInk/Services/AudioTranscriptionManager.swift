@@ -98,6 +98,11 @@ class AudioTranscriptionManager: ObservableObject {
                 var text = await whisperContext?.getTranscription() ?? ""
                 text = text.trimmingCharacters(in: .whitespacesAndNewlines)
                 
+                // Apply word replacements if enabled
+                if UserDefaults.standard.bool(forKey: "IsWordReplacementEnabled") {
+                    text = WordReplacementService.shared.applyReplacements(to: text)
+                }
+                
                 // Handle enhancement if enabled
                 if let enhancementService = whisperState.enhancementService,
                    enhancementService.isEnhancementEnabled,

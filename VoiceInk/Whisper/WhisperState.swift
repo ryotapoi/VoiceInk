@@ -401,6 +401,12 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             text = text.trimmingCharacters(in: .whitespacesAndNewlines)
             logger.notice("✅ Transcription completed successfully, length: \(text.count) characters")
             
+            // Apply word replacements if enabled
+            if UserDefaults.standard.bool(forKey: "IsWordReplacementEnabled") {
+                text = WordReplacementService.shared.applyReplacements(to: text)
+                logger.notice("✅ Word replacements applied")
+            }
+            
             if let enhancementService = enhancementService,
                enhancementService.isEnhancementEnabled,
                enhancementService.isConfigured {
@@ -442,14 +448,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 )
                 modelContext.insert(newTranscription)
                 try? modelContext.save()
-            }
-            
-            if case .trialExpired = licenseViewModel.licenseState {
-                text = """
-                    Your trial has expired. Upgrade to VoiceInk Pro at tryvoiceink.com/buy
-                    
-                    \(text)
-                    """
             }
             
             messageLog += "Done: \(text)\n"
