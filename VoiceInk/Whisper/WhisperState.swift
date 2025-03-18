@@ -450,6 +450,14 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 try? modelContext.save()
             }
             
+            if case .trialExpired = licenseViewModel.licenseState {
+                text = """
+                    Your trial has expired. Upgrade to VoiceInk Pro at tryvoiceink.com/buy
+                    
+                    \(text)
+                    """
+            }
+            
             messageLog += "Done: \(text)\n"
             
             SoundManager.shared.playStopSound()
