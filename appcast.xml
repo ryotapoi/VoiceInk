@@ -3,20 +3,21 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>1.11</title>
-            <pubDate>Thu, 14 Mar 2025 07:51:55 +0545</pubDate>
-            <sparkle:version>111</sparkle:version>
-            <sparkle:shortVersionString>1.11</sparkle:shortVersionString>
+            <title>1.13</title>
+            <pubDate>Thu, 18 Mar 2024 12:00:00 +0545</pubDate>
+            <sparkle:version>113</sparkle:version>
+            <sparkle:shortVersionString>1.13</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                    <h3>What's New in Version 1.11 🚀⚡</h3>
+                    <h3>What's New in Version 1.13 🚀⚡</h3>
                         <ol>
-                            <li>🌐 Added Language selection option in menu bar</li>
-                            <li>⚙️ Properly handling model loading </li>
-                            <li>🐛 Fixed minor bugs and issues</li>
+                            <li>🎵 Support for uploading recorded audio files to transcribe</li>
+                            <li>🔄 Retranscribe audio files from transcript history incase of bad results from AI enhancement</li>
+                            <li>📝 Word replacement feature works locally using regex implementation</li>
+                            <li>🎯 Enhanced default prompt for better results</li>
                         </ol>
             ]]></description>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.11/VoiceInk.dmg" length="5773359" type="application/octet-stream" sparkle:edSignature="dNxDffIJpj9WmGmONmFuUKuE+yfvM1znuMSc+8YWEh+PZy2YwDdft2ihhtG49n3w63oAL1s/rH0j89SgQDEEAw=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.13/VoiceInk.dmg" length="5878992" type="application/octet-stream" sparkle:edSignature="o2IW5QVk6UZb2nH9Tirz/zKLcCNnBpAAt4rNfdn5Fk2yvu7yJzwbLP3Awz6pCj+OQ0mEE2f/jq2WnSih5+yEBg=="/>
         </item>
     </channel>
 </rss>
