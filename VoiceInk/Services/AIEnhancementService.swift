@@ -192,24 +192,12 @@ class AIEnhancementService: ObservableObject {
             ""
         }
         
-        // Get word replacements if available
-        let wordReplacements = if let replacements = UserDefaults.standard.dictionary(forKey: "wordReplacements") as? [String: String],
-                                !replacements.isEmpty {
-            """
-            
-            Word Replacements:
-            \(replacements.map { "Replace '\($0.key)' with '\($0.value)'" }.joined(separator: "\n"))
-            """
-        } else {
-            ""
-        }
-        
         switch mode {
         case .transcriptionEnhancement:
             // Always use activePrompt since we've removed the toggle
             var systemMessage = String(format: AIPrompts.customPromptTemplate, activePrompt!.promptText)
             systemMessage += "\n\n" + AIPrompts.contextInstructions
-            systemMessage += clipboardContext + screenCaptureContext + wordReplacements
+            systemMessage += clipboardContext + screenCaptureContext
             return systemMessage
 
         case .aiAssistant:
