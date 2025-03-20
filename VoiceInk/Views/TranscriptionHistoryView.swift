@@ -52,59 +52,66 @@ struct TranscriptionHistoryView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            searchBar
-            
-            if displayedTranscriptions.isEmpty && !isLoading {
-                emptyStateView
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 10) {
-                        ForEach(displayedTranscriptions) { transcription in
-                            TranscriptionCard(
-                                transcription: transcription, 
-                                isExpanded: expandedTranscription == transcription,
-                                isSelected: selectedTranscriptions.contains(transcription),
-                                onDelete: { deleteTranscription(transcription) },
-                                onToggleSelection: { toggleSelection(transcription) }
-                            )
-                            .onTapGesture {
-                                expandedTranscription = expandedTranscription == transcription ? nil : transcription
-                            }
-                        }
-                        
-                        if hasMoreContent {
-                            Button(action: {
-                                loadMoreContent()
-                            }) {
-                                HStack(spacing: 8) {
-                                    if isLoading {
-                                        ProgressView()
-                                            .controlSize(.small)
-                                    }
-                                    Text(isLoading ? "Loading..." : "Load More")
-                                        .font(.system(size: 14, weight: .medium))
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                searchBar
+                
+                if displayedTranscriptions.isEmpty && !isLoading {
+                    emptyStateView
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 10) {
+                            ForEach(displayedTranscriptions) { transcription in
+                                TranscriptionCard(
+                                    transcription: transcription, 
+                                    isExpanded: expandedTranscription == transcription,
+                                    isSelected: selectedTranscriptions.contains(transcription),
+                                    onDelete: { deleteTranscription(transcription) },
+                                    onToggleSelection: { toggleSelection(transcription) }
+                                )
+                                .onTapGesture {
+                                    expandedTranscription = expandedTranscription == transcription ? nil : transcription
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color(.windowBackgroundColor).opacity(0.4))
-                                .cornerRadius(8)
                             }
-                            .buttonStyle(.plain)
-                            .disabled(isLoading)
-                            .padding(.top, 12)
+                            
+                            if hasMoreContent {
+                                Button(action: {
+                                    loadMoreContent()
+                                }) {
+                                    HStack(spacing: 8) {
+                                        if isLoading {
+                                            ProgressView()
+                                                .controlSize(.small)
+                                        }
+                                        Text(isLoading ? "Loading..." : "Load More")
+                                            .font(.system(size: 14, weight: .medium))
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(Color(.windowBackgroundColor).opacity(0.4))
+                                    .cornerRadius(8)
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(isLoading)
+                                .padding(.top, 12)
+                            }
                         }
+                        .padding(24)
+                        // Add bottom padding to ensure content is not hidden by the toolbar when visible
+                        .padding(.bottom, !selectedTranscriptions.isEmpty ? 60 : 0)
                     }
-                    .padding(24)
+                    .padding(.vertical, 16)
                 }
-                .padding(.vertical, 16)
             }
+            .background(Color(NSColor.controlBackgroundColor))
             
+            // Selection toolbar as an overlay
             if !selectedTranscriptions.isEmpty {
                 selectionToolbar
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.easeInOut(duration: 0.3), value: !selectedTranscriptions.isEmpty)
             }
         }
-        .background(Color(NSColor.controlBackgroundColor))
         .alert("Delete Selected Items?", isPresented: $showDeleteConfirmation) {
             Button("Delete", role: .destructive) {
                 deleteSelectedTranscriptions()
@@ -208,7 +215,11 @@ struct TranscriptionHistoryView: View {
             }
         }
         .padding(16)
-        .background(Color(.windowBackgroundColor))
+        .frame(maxWidth: .infinity)
+        .background(
+            Color(.windowBackgroundColor)
+                .shadow(color: Color.black.opacity(0.1), radius: 3, y: -2)
+        )
     }
     
     private func loadInitialContent() async {
