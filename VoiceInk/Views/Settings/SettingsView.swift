@@ -147,6 +147,24 @@ struct SettingsView: View {
                     }
                 }
                 
+                // Paste Method Section
+                SettingsSection(
+                    icon: "doc.on.clipboard",
+                    title: "Paste Method",
+                    subtitle: "Choose how text is pasted"
+                ) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Select the method used to paste text. Use AppleScript if you have a non-standard keyboard layout.")
+                            .settingsDescription()
+                        
+                        Toggle("Use AppleScript Paste Method", isOn: Binding(
+                            get: { UserDefaults.standard.bool(forKey: "UseAppleScriptPaste") },
+                            set: { UserDefaults.standard.set($0, forKey: "UseAppleScriptPaste") }
+                        ))
+                        .toggleStyle(.switch)
+                    }
+                }
+                
                 // Recorder Preference Section
                 SettingsSection(
                     icon: "rectangle.on.rectangle",

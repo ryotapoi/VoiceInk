@@ -7,16 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E19E53B02D36D8120067F3D4 /* libggml.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E19E53A72D36D7EF0067F3D4 /* libggml.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		E19E53B12D36D8200067F3D4 /* libggml-base.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E19E53A82D36D7EF0067F3D4 /* libggml-base.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		E19E53B22D36D82F0067F3D4 /* libwhisper.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E19E53AD2D36D7EF0067F3D4 /* libwhisper.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		E19E53B32D36D84A0067F3D4 /* libggml-cpu.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E19E53AA2D36D7EF0067F3D4 /* libggml-cpu.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		E19E53B42D36D85B0067F3D4 /* libggml-blas.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E19E53A92D36D7EF0067F3D4 /* libggml-blas.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		E19E53B52D36D8660067F3D4 /* libggml-metal.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E19E53AB2D36D7EF0067F3D4 /* libggml-metal.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E1A261122CC143AC00B233D1 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = E1A261112CC143AC00B233D1 /* KeyboardShortcuts */; };
+		E1A4486E2D8C03A2004526F9 /* whisper.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A4486D2D8C03A1004526F9 /* whisper.xcframework */; };
+		E1A4486F2D8C03A2004526F9 /* whisper.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E1A4486D2D8C03A1004526F9 /* whisper.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E1ADD45A2CC5352A00303ECB /* LaunchAtLogin in Frameworks */ = {isa = PBXBuildFile; productRef = E1ADD4592CC5352A00303ECB /* LaunchAtLogin */; };
 		E1ADD45F2CC544F100303ECB /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E1ADD45E2CC544F100303ECB /* Sparkle */; };
-		E1E0F4262CC7FF300005EE87 /* whisper in Frameworks */ = {isa = PBXBuildFile; productRef = E1E0F4252CC7FF300005EE87 /* whisper */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,12 +38,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				E19E53B52D36D8660067F3D4 /* libggml-metal.dylib in CopyFiles */,
-				E19E53B42D36D85B0067F3D4 /* libggml-blas.dylib in CopyFiles */,
-				E19E53B32D36D84A0067F3D4 /* libggml-cpu.dylib in CopyFiles */,
-				E19E53B22D36D82F0067F3D4 /* libwhisper.1.dylib in CopyFiles */,
-				E19E53B12D36D8200067F3D4 /* libggml-base.dylib in CopyFiles */,
-				E19E53B02D36D8120067F3D4 /* libggml.dylib in CopyFiles */,
+				E1A4486F2D8C03A2004526F9 /* whisper.xcframework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,15 +48,7 @@
 		E11473B02CBE0F0A00318EE4 /* VoiceInk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceInk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11473C32CBE0F0B00318EE4 /* VoiceInkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoiceInkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11473CD2CBE0F0B00318EE4 /* VoiceInkUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoiceInkUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E19E53A72D36D7EF0067F3D4 /* libggml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libggml.dylib; path = /usr/local/lib/libggml.dylib; sourceTree = "<absolute>"; };
-		E19E53A82D36D7EF0067F3D4 /* libggml-base.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libggml-base.dylib"; path = "/usr/local/lib/libggml-base.dylib"; sourceTree = "<absolute>"; };
-		E19E53A92D36D7EF0067F3D4 /* libggml-blas.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libggml-blas.dylib"; path = "/usr/local/lib/libggml-blas.dylib"; sourceTree = "<absolute>"; };
-		E19E53AA2D36D7EF0067F3D4 /* libggml-cpu.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libggml-cpu.dylib"; path = "/usr/local/lib/libggml-cpu.dylib"; sourceTree = "<absolute>"; };
-		E19E53AB2D36D7EF0067F3D4 /* libggml-metal.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libggml-metal.dylib"; path = "/usr/local/lib/libggml-metal.dylib"; sourceTree = "<absolute>"; };
-		E19E53AC2D36D7EF0067F3D4 /* libwhisper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwhisper.dylib; path = /usr/local/lib/libwhisper.dylib; sourceTree = "<absolute>"; };
-		E19E53AD2D36D7EF0067F3D4 /* libwhisper.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwhisper.1.dylib; path = /usr/local/lib/libwhisper.1.dylib; sourceTree = "<absolute>"; };
-		E19E53AE2D36D7EF0067F3D4 /* libwhisper.1.7.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libwhisper.1.7.4.dylib; path = /usr/local/lib/libwhisper.1.7.4.dylib; sourceTree = "<absolute>"; };
-		E1E0F4242CC7FF2A0005EE87 /* whisper.cpp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = whisper.cpp; path = /Users/beingpax/whisper.cpp; sourceTree = "<absolute>"; };
+		E1A4486D2D8C03A1004526F9 /* whisper.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = whisper.xcframework; path = "../whisper.cpp/build-apple/whisper.xcframework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -92,8 +74,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1A4486E2D8C03A2004526F9 /* whisper.xcframework in Frameworks */,
 				E1ADD45A2CC5352A00303ECB /* LaunchAtLogin in Frameworks */,
-				E1E0F4262CC7FF300005EE87 /* whisper in Frameworks */,
 				E1ADD45F2CC544F100303ECB /* Sparkle in Frameworks */,
 				E1A261122CC143AC00B233D1 /* KeyboardShortcuts in Frameworks */,
 			);
@@ -124,7 +106,6 @@
 				E11473D02CBE0F0B00318EE4 /* VoiceInkUITests */,
 				E114741C2CBE1DE200318EE4 /* Frameworks */,
 				E11473B12CBE0F0A00318EE4 /* Products */,
-				E1E0F4242CC7FF2A0005EE87 /* whisper.cpp */,
 			);
 			sourceTree = "<group>";
 		};
@@ -141,14 +122,7 @@
 		E114741C2CBE1DE200318EE4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E19E53A72D36D7EF0067F3D4 /* libggml.dylib */,
-				E19E53A82D36D7EF0067F3D4 /* libggml-base.dylib */,
-				E19E53A92D36D7EF0067F3D4 /* libggml-blas.dylib */,
-				E19E53AA2D36D7EF0067F3D4 /* libggml-cpu.dylib */,
-				E19E53AB2D36D7EF0067F3D4 /* libggml-metal.dylib */,
-				E19E53AC2D36D7EF0067F3D4 /* libwhisper.dylib */,
-				E19E53AD2D36D7EF0067F3D4 /* libwhisper.1.dylib */,
-				E19E53AE2D36D7EF0067F3D4 /* libwhisper.1.7.4.dylib */,
+				E1A4486D2D8C03A1004526F9 /* whisper.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -177,7 +151,6 @@
 				E1A261112CC143AC00B233D1 /* KeyboardShortcuts */,
 				E1ADD4592CC5352A00303ECB /* LaunchAtLogin */,
 				E1ADD45E2CC544F100303ECB /* Sparkle */,
-				E1E0F4252CC7FF300005EE87 /* whisper */,
 			);
 			productName = VoiceInk;
 			productReference = E11473B02CBE0F0A00318EE4 /* VoiceInk.app */;
@@ -468,7 +441,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 112;
+				CURRENT_PROJECT_VERSION = 114;
 				DEVELOPMENT_ASSET_PATHS = "\"VoiceInk/Preview Content\"";
 				DEVELOPMENT_TEAM = V6J6A3VWY2;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -483,7 +456,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.12;
+				MARKETING_VERSION = 1.14;
 				PRODUCT_BUNDLE_IDENTIFIER = com.prakashjoshipax.VoiceInk;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -501,7 +474,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 112;
+				CURRENT_PROJECT_VERSION = 114;
 				DEVELOPMENT_ASSET_PATHS = "\"VoiceInk/Preview Content\"";
 				DEVELOPMENT_TEAM = V6J6A3VWY2;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -516,7 +489,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.12;
+				MARKETING_VERSION = 1.14;
 				PRODUCT_BUNDLE_IDENTIFIER = com.prakashjoshipax.VoiceInk;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -675,10 +648,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E1ADD45D2CC544F100303ECB /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
-		};
-		E1E0F4252CC7FF300005EE87 /* whisper */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = whisper;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
