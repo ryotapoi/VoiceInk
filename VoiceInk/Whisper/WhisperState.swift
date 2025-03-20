@@ -66,7 +66,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     private var transcriptionStartTime: Date?
     private var notchWindowManager: NotchWindowManager?
     private var miniWindowManager: MiniWindowManager?
-    private let modelMigration = WhisperModelMigration()
     
     init(modelContext: ModelContext, enhancementService: AIEnhancementService? = nil) {
         self.modelContext = modelContext
@@ -89,29 +88,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         if let savedModelName = UserDefaults.standard.string(forKey: "CurrentModel"),
            let savedModel = availableModels.first(where: { $0.name == savedModelName }) {
             currentModel = savedModel
-        }
-        Task {
-            await migrateModelsIfNeeded()
-        }
-    }
-    
-    private func migrateModelsIfNeeded() async {
-        if modelMigration.isMigrationNeeded {
-            logger.info("Starting model migration from Documents to Application Support")
-            let (success, migratedModels) = await modelMigration.migrateModels()
-            
-            if success && !migratedModels.isEmpty {
-                logger.info("Successfully migrated \(migratedModels.count) models")
-                await MainActor.run {
-                    loadAvailableModels()
-                    
-                    if currentModel == nil, let firstModel = availableModels.first {
-                        Task {
-                            await setDefaultModel(firstModel)
-                        }
-                    }
-                }
-            }
         }
     }
     
