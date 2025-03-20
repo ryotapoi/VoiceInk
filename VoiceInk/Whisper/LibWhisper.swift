@@ -73,7 +73,7 @@ actor WhisperContext {
         params.translate        = false
         params.n_threads        = Int32(maxThreads)
         params.offset_ms        = 0
-        params.no_context       = true
+        params.no_context       = false
         params.single_segment   = false
         
         // Adjusted parameters to reduce hallucination
