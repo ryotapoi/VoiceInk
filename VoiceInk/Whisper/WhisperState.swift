@@ -166,6 +166,9 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 if granted {
                     Task {
                         do {
+                            // Start window configuration in parallel with recording setup
+                            async let windowConfigTask = ActiveWindowService.shared.applyConfigurationForCurrentApp()
+                            
                             let file = try FileManager.default.url(for: .documentDirectory,
                                 in: .userDomainMask,
                                 appropriateFor: nil,
@@ -179,6 +182,10 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                             self.recordedFile = file
                             self.transcriptionStartTime = Date()
                             
+                            // Wait for window configuration to complete
+                            await windowConfigTask
+                            
+                            // Start background tasks for model loading and screen capture
                             Task.detached(priority: .background) {
                                 await self.performBackgroundTasks()
                             }
@@ -208,8 +215,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 }
             }
         }
-        
-        await ActiveWindowService.shared.applyConfigurationForCurrentApp()
         
         if let enhancementService = self.enhancementService,
            enhancementService.isEnhancementEnabled && 
