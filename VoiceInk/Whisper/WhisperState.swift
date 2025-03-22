@@ -132,29 +132,49 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 if granted {
                     Task {
                         do {
-                            // Start window configuration in parallel with recording setup
-                            async let windowConfigTask = ActiveWindowService.shared.applyConfigurationForCurrentApp()
-                            
                             let file = try FileManager.default.url(for: .documentDirectory,
                                 in: .userDomainMask,
                                 appropriateFor: nil,
                                 create: true)
                                 .appending(path: "output.wav")
                             
-                            try await self.recorder.startRecording(toOutputFile: file, delegate: self)
+                            // Start recording setup and window configuration in parallel
+                            async let recordingTask = self.recorder.startRecording(toOutputFile: file, delegate: self)
+                            async let windowConfigTask = ActiveWindowService.shared.applyConfigurationForCurrentApp()
+                            
+                            // Start model loading in parallel if needed
+                            async let modelLoadingTask: Void = {
+                                if let currentModel = await self.currentModel, await self.whisperContext == nil {
+                                    logger.notice("🔄 Loading model in parallel with recording: \(currentModel.name)")
+                                    do {
+                                        try await self.loadModel(currentModel)
+                                    } catch {
+                                        logger.error("❌ Model preloading failed: \(error.localizedDescription)")
+                                        await MainActor.run {
+                                            self.messageLog += "Error preloading model: \(error.localizedDescription)\n"
+                                        }
+                                    }
+                                }
+                            }()
+                            
+                            // Wait for recording and window configuration
+                            try await recordingTask
+                            await windowConfigTask
                             
                             self.isRecording = true
                             self.isVisualizerActive = true
                             self.recordedFile = file
                             self.transcriptionStartTime = Date()
                             
-                            // Wait for window configuration to complete
-                            await windowConfigTask
-                            
-                            // Start background tasks for model loading and screen capture
-                            Task.detached(priority: .background) {
-                                await self.performBackgroundTasks()
+                            // After recording and window config are done, handle enhancement service
+                            if let enhancementService = self.enhancementService,
+                               enhancementService.isEnhancementEnabled && 
+                               enhancementService.useScreenCaptureContext {
+                                await enhancementService.captureScreenContext()
                             }
+                            
+                            // Wait for model loading to complete (this won't block the UI)
+                            await modelLoadingTask
                             
                         } catch {
                             self.messageLog += "\(error.localizedDescription)\n"
@@ -166,26 +186,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                     self.messageLog += "Recording permission denied\n"
                 }
             }
-        }
-    }
-    
-    private func performBackgroundTasks() async {
-        if let currentModel = self.currentModel, self.whisperContext == nil {
-            logger.notice("🔄 Preloading model in background: \(currentModel.name)")
-            do {
-                try await self.loadModel(currentModel)
-            } catch {
-                logger.error("❌ Background model preloading failed: \(error.localizedDescription)")
-                await MainActor.run {
-                    self.messageLog += "Error preloading model: \(error.localizedDescription)\n"
-                }
-            }
-        }
-        
-        if let enhancementService = self.enhancementService,
-           enhancementService.isEnhancementEnabled && 
-           enhancementService.useScreenCaptureContext {
-            await enhancementService.captureScreenContext()
         }
     }
     
