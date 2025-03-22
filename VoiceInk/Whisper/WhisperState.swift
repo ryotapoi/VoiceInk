@@ -127,6 +127,20 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 logger.error("❌ No recorded file found after stopping recording")
             }
         } else {
+            // Validate that a model is selected before allowing recording to start
+            guard currentModel != nil else {
+                // Show an alert to the user
+                await MainActor.run {
+                    let alert = NSAlert()
+                    alert.messageText = "No Whisper Model Selected"
+                    alert.informativeText = "Please select a default whisper model in AI Models tab before recording."
+                    alert.alertStyle = .warning
+                    alert.addButton(withTitle: "OK")
+                    alert.runModal()
+                }
+                return
+            }
+            
             logger.notice("🎙️ Starting recording")
             requestRecordPermission { [self] granted in
                 if granted {
