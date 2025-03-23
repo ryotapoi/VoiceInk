@@ -1,5 +1,9 @@
 import Foundation
 
+extension Notification.Name {
+    static let languageDidChange = Notification.Name("languageDidChange")
+}
+
 @MainActor
 class WhisperPrompt: ObservableObject {
     @Published var transcriptionPrompt: String = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? ""
@@ -10,46 +14,62 @@ class WhisperPrompt: ObservableObject {
     // Language-specific base prompts
     private let languagePrompts: [String: String] = [
         // English
-        "en": "Hey, How are you doing? Are you good? It's nice to meet after so long.",
+        "en": "Hello, how are you doing? Nice to meet you.",
         
         // Asian Languages
-        "hi": "नमस्ते, कैसे हैं आप? सब ठीक है? इतने समय बाद मिलकर बहुत अच्छा लगा।",
-        "bn": "নমস্কার, কেমন আছেন? সব ঠিক আছে? এত দিন পর দেখা হয়ে খুব ভালো লাগছে।",
-        "ja": "こんにちは、お元気ですか？調子はいかがですか？久しぶりにお会いできて嬉しいです。",
-        "ko": "안녕하세요, 잘 지내시나요? 괜찮으신가요? 오랜만에 만나서 반갑습니다.",
-        "zh": "你好，最近好吗？你还好吗？好久不见了，很高兴见到你。",
-        "th": "สวัสดีครับ/ค่ะ สบายดีไหม? เป็นอย่างไรบ้าง? ดีใจที่ได้เจอกันหลังจากนานมาก",
-        "vi": "Xin chào, bạn khỏe không? Dạo này bạn thế nào? Rất vui được gặp lại bạn sau thời gian dài.",
+        "hi": "नमस्ते, कैसे हैं आप? आपसे मिलकर अच्छा लगा।",
+        "bn": "নমস্কার, কেমন আছেন? আপনার সাথে দেখা হয়ে ভালো লাগলো।",
+        "ja": "こんにちは、お元気ですか？お会いできて嬉しいです。",
+        "ko": "안녕하세요, 잘 지내시나요? 만나서 반갑습니다.",
+        "zh": "你好，最近好吗？见到你很高兴。",
+        "th": "สวัสดีครับ/ค่ะ, สบายดีไหม? ยินดีที่ได้พบคุณ",
+        "vi": "Xin chào, bạn khỏe không? Rất vui được gặp bạn.",
         
         // European Languages
-        "es": "¡Hola! ¿Cómo estás? ¿Todo bien? ¡Qué gusto verte después de tanto tiempo!",
-        "fr": "Bonjour! Comment allez-vous? Vous vous portez bien? C'est un plaisir de vous revoir après si longtemps!",
-        "de": "Hallo! Wie geht es dir? Alles in Ordnung? Schön, dich nach so langer Zeit wiederzusehen!",
-        "it": "Ciao! Come stai? Tutto bene? È bello rivederti dopo tanto tempo!",
-        "pt": "Olá! Como você está? Tudo bem? É muito bom te ver depois de tanto tempo!",
-        "ru": "Здравствуйте! Как у вас дела? Всё хорошо? Приятно встретиться после долгого времени!",
-        "pl": "Cześć! Jak się masz? Wszystko w porządku? Miło cię widzieć po tak długim czasie!",
-        "nl": "Hallo! Hoe gaat het met je? Alles goed? Fijn om je na zo'n lange tijd weer te zien!",
-        "tr": "Merhaba! Nasılsın? İyi misin? Uzun zaman sonra görüşmek çok güzel!",
+        "es": "¡Hola, ¿cómo estás? Encantado de conocerte.",
+        "fr": "Bonjour, comment allez-vous? Ravi de vous rencontrer.",
+        "de": "Hallo, wie geht es dir? Schön dich kennenzulernen.",
+        "it": "Ciao, come stai? Piacere di conoscerti.",
+        "pt": "Olá, como você está? Prazer em conhecê-lo.",
+        "ru": "Здравствуйте, как ваши дела? Приятно познакомиться.",
+        "pl": "Cześć, jak się masz? Miło cię poznać.",
+        "nl": "Hallo, hoe gaat het? Aangenaam kennis te maken.",
+        "tr": "Merhaba, nasılsın? Tanıştığımıza memnun oldum.",
         
         // Middle Eastern Languages
-        "ar": "مرحباً! كيف حالك؟ هل أنت بخير؟ من الجميل أن نلتقي بعد كل هذا الوقت!",
-        "fa": "سلام! حال شما چطور است؟ خوب هستید؟ خیلی خوشحالم که بعد از مدت‌ها می‌بینمتان!",
-        "he": "!שלום! מה שלומך? הכל בסדר? כל כך נעים לראות אותך אחרי זמן רב",
+        "ar": "مرحباً، كيف حالك؟ سعيد بلقائك.",
+        "fa": "سلام، حال شما چطور است؟ از آشنایی با شما خوشوقتم.",
+        "he": ",שלום, מה שלומך? נעים להכיר",
         
         // South Asian Languages
-        "ta": "வணக்கம், எப்படி இருக்கிறீர்கள்? நலமா? நீண்ட நாட்களுக்குப் பிறகு சந்திப்பது மகிழ்ச்சியாக இருக்கிறது.",
-        "te": "నమస్కారం, ఎలా ఉన్నారు? బాగున్నారా? ఇంత కాలం తర్వాత కలుసుకోవడం చాలా సంతోషంగా ఉంది.",
-        "ml": "നമസ്കാരം, സുഖമാണോ? എല്ലാം ശരിയാണോ? ഇത്രയും കാലത്തിനു ശേഷം കാണുന്നതിൽ സന്തോഷം.",
-        "kn": "ನಮಸ್ಕಾರ, ಹೇಗಿದ್ದೀರಾ? ಎಲ್ಲಾ ಚೆನ್ನಾಗಿದೆಯಾ? ಇಷ್ಟು ದಿನಗಳ ನಂತರ ನಿಮ್ಮನ್ನು ನೋಡಿ ತುಂಬಾ ಸಂತೋಷವಾಗಿದೆ.",
-        "ur": "السلام علیکم! کیسے ہیں آپ؟ سب ٹھیک ہے؟ اتنے عرصے بعد آپ سے مل کر بہت خوشی ہوئی۔",
+        "ta": "வணக்கம், எப்படி இருக்கிறீர்கள்? உங்களை சந்தித்ததில் மகிழ்ச்சி.",
+        "te": "నమస్కారం, ఎలా ఉన్నారు? కలవడం చాలా సంతోషం.",
+        "ml": "നമസ്കാരം, സുഖമാണോ? കണ്ടതിൽ സന്തോഷം.",
+        "kn": "ನಮಸ್ಕಾರ, ಹೇಗಿದ್ದೀರಾ? ನಿಮ್ಮನ್ನು ಭೇಟಿಯಾಗಿ ಸಂತೋಷವಾಗಿದೆ.",
+        "ur": "السلام علیکم، کیسے ہیں آپ؟ آپ سے مل کر خوشی ہوئی۔",
         
         // Default prompt for unsupported languages
-        "default": "Hello. How are you? Nice to meet you after so long."
+        "default": "Hello, how are you? Nice to meet you."
     ]
     
     init() {
         loadDictionaryItems()
+        updateTranscriptionPrompt()
+        
+        // Setup notification observer
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLanguageChange),
+            name: .languageDidChange,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func handleLanguageChange() {
         updateTranscriptionPrompt()
     }
     
@@ -80,7 +100,6 @@ class WhisperPrompt: ObservableObject {
         allWords.append(contentsOf: dictionaryWords)
         
         if !allWords.isEmpty {
-            // Keep Important words section in English for all languages
             prompt += "\nImportant words: " + allWords.joined(separator: ", ")
         }
         

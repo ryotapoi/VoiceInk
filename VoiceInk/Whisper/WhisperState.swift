@@ -372,7 +372,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             SoundManager.shared.playStopSound()
             
             if AXIsProcessTrusted() {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                     CursorPaster.pasteAtCursor(text)
                 }
             } else {
