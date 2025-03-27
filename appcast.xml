@@ -3,12 +3,16 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>1.17</title>
+            <title>1.18</title>
             <pubDate>Sat, 26 Mar 2025 12:00:00 +0545</pubDate>
-            <sparkle:version>117</sparkle:version>
-            <sparkle:shortVersionString>1.17</sparkle:shortVersionString>
+            <sparkle:version>118</sparkle:version>
+            <sparkle:shortVersionString>1.18</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
+                <h3>What's New in Version 1.18 🚀⚡</h3>
+                <ul>
+                    <li>🚫 Fixed multiple pasting operation errors</li>
+                </ul>
                     <h3>What's New in Version 1.17 🚀⚡</h3>
                 <ul>
                     <li>🌍 Better-formatted output for International languages</li>
@@ -17,7 +21,7 @@
                     <li>⚡ Quick double press for hands-free recording (with push-to-talk key)</li>
                 </ul>
             ]]></description>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.17/VoiceInk.dmg" length="7800864" type="application/octet-stream" sparkle:edSignature="Zo/Uc6pzo9kkiSWFduBmIyVmHKjT7OvJUlkelWTLKdm9QHskM97O1gvNwmE6tdxiR+/Zz4quczJk15TQxVL8Cw=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.18/VoiceInk.dmg" length="7802001" type="application/octet-stream" sparkle:edSignature="0Lc/dv8RZjFoXNT1dEJkjXETtB7Z8HsTmXBYDUAgft2+Gv1STLbYRwkOZLlFEbEjdZgICbgXaFlyEW5oKvWGCQ=="/>
         </item>
     </channel>
 </rss>
