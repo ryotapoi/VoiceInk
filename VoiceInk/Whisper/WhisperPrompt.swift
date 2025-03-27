@@ -24,6 +24,7 @@ class WhisperPrompt: ObservableObject {
         "zh": "你好，最近好吗？见到你很高兴。",
         "th": "สวัสดีครับ/ค่ะ, สบายดีไหม? ยินดีที่ได้พบคุณ",
         "vi": "Xin chào, bạn khỏe không? Rất vui được gặp bạn.",
+        "yue": "你好，最近點呀？見到你好開心。",
         
         // European Languages
         "es": "¡Hola, ¿cómo estás? Encantado de conocerte.",
