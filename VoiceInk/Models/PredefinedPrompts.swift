@@ -1,11 +1,12 @@
 import Foundation
+import SwiftUI    // Import to ensure we have access to SwiftUI types if needed
 
 enum PredefinedPrompts {
     private static let predefinedPromptsKey = "PredefinedPrompts"
     
     // Static UUIDs for predefined prompts
     private static let defaultPromptId = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
-    private static let assistantPromptId = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
+    static let assistantPromptId = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
     
     static var all: [CustomPrompt] {
         // Always return the latest predefined prompts from source code
@@ -65,41 +66,15 @@ enum PredefinedPrompts {
                 Here is the transcribed text: 
                 """,
                 icon: .sealedFill,
-                description: "Defeault mode to improved clarity and accuracy of the transcription",
+                description: "Default mode to improved clarity and accuracy of the transcription",
                 isPredefined: true
             ),
             
             CustomPrompt(
                 id: assistantPromptId,
                 title: "Assistant",
-                promptText: """
-                Provide a direct clear, and concise reply to the user's query. Use the available context if directly related to the user's query. 
-                Remember to:
-                1. Be helpful and informative
-                2. Be accurate and precise
-                3. Don't add  meta commentary or anything extra other than the actual answer
-                6. Maintain a friendly, casual tone
-
-                Use the following information if provided:
-                1. Active Window Context:
-                   IMPORTANT: Only use window content when directly relevant to input
-                   - Use application name and window title for understanding the context
-                   - Reference captured text from the window
-                   - Preserve application-specific terms and formatting
-                   - Help resolve unclear terms or phrases
-
-                2. Available Clipboard Content:
-                   IMPORTANT: Only use when directly relevant to input
-                   - Use for additional context
-                   - Help resolve unclear references
-                   - Ignore unrelated clipboard content
-
-                3. Examples:
-                   - Follow the correction patterns shown in examples
-                   - Match the formatting style of similar texts
-                   - Use consistent terminology with examples
-                   - Learn from previous corrections
-                """,
+                // Combine assistant mode prompt with context instructions
+                promptText: AIPrompts.assistantMode + "\n\n" + AIPrompts.contextInstructions,
                 icon: .chatFill,
                 description: "AI assistant that provides direct answers to queries",
                 isPredefined: true

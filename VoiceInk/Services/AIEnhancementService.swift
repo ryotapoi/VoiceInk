@@ -173,7 +173,6 @@ class AIEnhancementService: ObservableObject {
                               !clipboardText.isEmpty {
             """
             
-            Context Awareness
             Available Clipboard Context: \(clipboardText)
             """
         } else {
@@ -192,16 +191,39 @@ class AIEnhancementService: ObservableObject {
             ""
         }
         
+        // Format all context information together with instructions
+        let contextSection = if !clipboardContext.isEmpty || !screenCaptureContext.isEmpty {
+            """
+            
+            \(AIPrompts.contextInstructions)
+            
+            <CONTEXT_INFORMATION>
+            \(clipboardContext)
+            \(screenCaptureContext)
+            </CONTEXT_INFORMATION>
+            """
+        } else {
+            ""
+        }
+        
         switch mode {
         case .transcriptionEnhancement:
-            // Always use activePrompt since we've removed the toggle
+            // Check if the active prompt is the Assistant prompt
+            if let activePrompt = activePrompt,
+               activePrompt.id == PredefinedPrompts.assistantPromptId {
+                // For the Assistant predefined prompt, use the assistant mode prompt directly
+                // This ensures proper system message formatting
+                return AIPrompts.assistantMode + contextSection
+            }
+            
+            // For all other prompts, use the custom prompt template
             var systemMessage = String(format: AIPrompts.customPromptTemplate, activePrompt!.promptText)
-            systemMessage += "\n\n" + AIPrompts.contextInstructions
-            systemMessage += clipboardContext + screenCaptureContext
+            systemMessage += contextSection
             return systemMessage
 
         case .aiAssistant:
-            return AIPrompts.assistantMode + clipboardContext + screenCaptureContext
+            // For AI assistant mode, use the assistant mode prompt directly
+            return AIPrompts.assistantMode + contextSection
         }
     }
     
@@ -216,6 +238,9 @@ class AIEnhancementService: ObservableObject {
             throw EnhancementError.emptyText
         }
         
+        // Format transcript with boundary markers
+        let formattedText = "<TRANSCRIPT>\n\(text)\n</TRANSCRIPT>"
+        
         // Determine mode and get system message
         let mode = determineMode(text: text)
         let systemMessage = getSystemMessage(for: mode)
@@ -224,9 +249,9 @@ class AIEnhancementService: ObservableObject {
         if aiService.selectedProvider == .ollama {
             logger.notice("📤 Request to Ollama")
             logger.notice("🤖 System: \(systemMessage, privacy: .public)")
-            logger.notice("📝 Sending: \(text, privacy: .public)")
+            logger.notice("📝 Sending: \(formattedText, privacy: .public)")
             do {
-                let result = try await aiService.enhanceWithOllama(text: text, systemPrompt: systemMessage)
+                let result = try await aiService.enhanceWithOllama(text: formattedText, systemPrompt: systemMessage)
                 logger.notice("✅ Ollama enhancement successful")
                 logger.notice("📝 Received: \(result, privacy: .public)")
                 return result
@@ -274,7 +299,7 @@ class AIEnhancementService: ObservableObject {
                     [
                         "parts": [
                             ["text": systemMessage],
-                            ["text": "Transcript:\n\(text)"]
+                            ["text": formattedText]
                         ]
                     ]
                 ],
@@ -288,7 +313,7 @@ class AIEnhancementService: ObservableObject {
             do {
                 logger.notice("📤 Request to Gemini")
                 logger.notice("🤖 System: \(systemMessage, privacy: .public)")
-                logger.notice("📝 Sending: \(text, privacy: .public)")
+                logger.notice("📝 Sending: \(formattedText, privacy: .public)")
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
@@ -349,7 +374,7 @@ class AIEnhancementService: ObservableObject {
                 "max_tokens": 1024,
                 "system": systemMessage,
                 "messages": [
-                    ["role": "user", "content": text]
+                    ["role": "user", "content": formattedText]
                 ]
             ]
             
@@ -367,7 +392,7 @@ class AIEnhancementService: ObservableObject {
             do {
                 logger.notice("📤 Request to Anthropic")
                 logger.notice("🤖 System: \(systemMessage, privacy: .public)")
-                logger.notice("📝 Sending: \(text, privacy: .public)")
+                logger.notice("📝 Sending: \(formattedText, privacy: .public)")
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
@@ -435,7 +460,7 @@ class AIEnhancementService: ObservableObject {
             
             let messages: [[String: Any]] = [
                 ["role": "system", "content": systemMessage],
-                ["role": "user", "content": "Transcript:\n\(text)"]
+                ["role": "user", "content": formattedText]
             ]
             
             logger.info("Making request to \(self.aiService.selectedProvider.rawValue) with text length: \(text.count) characters")
@@ -454,7 +479,7 @@ class AIEnhancementService: ObservableObject {
             do {
                 logger.notice("📤 Request to \(self.aiService.selectedProvider.rawValue, privacy: .public)")
                 logger.notice("🤖 System: \(systemMessage, privacy: .public)")
-                logger.notice("📝 Sending: \(text, privacy: .public)")
+                logger.notice("📝 Sending: \(formattedText, privacy: .public)")
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
