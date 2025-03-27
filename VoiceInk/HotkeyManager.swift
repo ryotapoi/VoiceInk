@@ -49,6 +49,10 @@ class HotkeyManager: ObservableObject {
     private var isLockedRecording = false  // For toggle mode after double-press
     private let doublePressThreshold = 0.3  // 300ms for faster double-press detection
     private let briefPressThreshold = 1.0 // 1000ms threshold for brief press
+
+        // Add cooldown management
+    private var lastShortcutTriggerTime: Date?
+    private let shortcutCooldownInterval: TimeInterval = 0.5 // 500ms cooldown
     
     enum PushToTalkKey: String, CaseIterable {
         case rightOption = "rightOption"
@@ -332,12 +336,27 @@ class HotkeyManager: ObservableObject {
         }
     }
     
+    
     private func setupShortcutHandler() {
         KeyboardShortcuts.onKeyUp(for: .toggleMiniRecorder) { [weak self] in
             Task { @MainActor in
-                await self?.whisperState.handleToggleMiniRecorder()
+                await self?.handleShortcutTriggered()
             }
         }
+    }
+    
+    private func handleShortcutTriggered() async {
+        // Check cooldown
+        if let lastTrigger = lastShortcutTriggerTime,
+           Date().timeIntervalSince(lastTrigger) < shortcutCooldownInterval {
+            return // Still in cooldown period
+        }
+        
+        // Update last trigger time
+        lastShortcutTriggerTime = Date()
+        
+        // Handle the shortcut
+        await whisperState.handleToggleMiniRecorder()
     }
     
     deinit {
