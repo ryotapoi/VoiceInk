@@ -97,11 +97,10 @@ class WhisperPrompt: ObservableObject {
         let basePrompt = languagePrompts[selectedLanguage] ?? languagePrompts["default"]!
         
         var prompt = basePrompt
-        var allWords = ["VoiceInk"]
-        allWords.append(contentsOf: dictionaryWords)
         
-        if !allWords.isEmpty {
-            prompt += "\nImportant words: " + allWords.joined(separator: ", ")
+        // Add dictionary words directly, without any prefix
+        if !dictionaryWords.isEmpty {
+            prompt += "\n VoiceInk, " + dictionaryWords.joined(separator: ", ")
         }
         
         transcriptionPrompt = prompt
