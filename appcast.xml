@@ -3,22 +3,22 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>1.19</title>
-            <pubDate>Sat, 28 Mar 2025 12:00:00 +0545</pubDate>
-            <sparkle:version>119</sparkle:version>
-            <sparkle:shortVersionString>1.19</sparkle:shortVersionString>
+            <title>1.20</title>
+            <pubDate>Sat, 6 Apr 2025 12:00:00 +0545</pubDate>
+            <sparkle:version>120</sparkle:version>
+            <sparkle:shortVersionString>1.20</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                    <h3>What's New in Version 1.19 🚀⚡</h3>
+                    <h3>What's New in Version 1.20 🚀⚡</h3>
                              <ul>
-                    <li>📵 Removed double click feature (now single press does hands free recording, Press and hold does normal push-to-talk)</li>
-                    <li>🌐 Added Cantonese language support #38 by @WingCH</li>
-                    <li>🧠 Improved Context Awareness</li>
-                    <li>✨ Better Consistent Results with AI assistant Prompt</li>
-                            </ul>
-                
+                    <li>🛠️ Improved the hallucination issues for short recordings.</li>
+                    <li>🚀 Added support for Large V2 Models</li>
+                    <li>🔄 Added support for Mistral AI by @vaygr</li>
+                    <li>🔊 Fixed the play/pause issue on sequioa 15.4 (changed it to mute/unmute functionality)</li>
+                    <li>🔍 Fixed Ollama Models not showing up</li>
+                             </ul>
             ]]></description>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.19/VoiceInk.dmg" length="7801118" type="application/octet-stream" sparkle:edSignature="VjLUr0c7Whton7PUYWd1pmRb0n1NyrE+jvwd1ecvrv5w4CiVmfXFsLKR99sVxF3gUQuCQmqsJaRZo0PAk0rYAQ=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.20/VoiceInk.dmg" length="7910036" type="application/octet-stream" sparkle:edSignature="cnyTdJ/U+VeOBW6hp4JWEDCfNJl7hk0Th57HBuBq+pw35G4jvyMO3ytJxjKzSDCArevLxFiW8mgfbcMdD5wpCw=="/>
         </item>
     </channel>
 </rss>
