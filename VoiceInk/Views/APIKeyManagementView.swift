@@ -358,14 +358,29 @@ struct APIKeyManagementView: View {
                     
                     // Configuration Fields
                     VStack(alignment: .leading, spacing: 8) {
-                        TextField("Base URL (e.g., https://api.example.com/v1/chat/completions)", text: $aiService.customBaseURL)
-                            .textFieldStyle(.roundedBorder)
-                        
-                        TextField("Model Name (e.g., gpt-4o-mini, claude-3-5-sonnet-20240620)", text: $aiService.customModel)
-                            .textFieldStyle(.roundedBorder)
+                        if !aiService.isAPIKeyValid {
+                            TextField("Base URL (e.g., https://api.example.com/v1/chat/completions)", text: $aiService.customBaseURL)
+                                .textFieldStyle(.roundedBorder)
+                            
+                            TextField("Model Name (e.g., gpt-4o-mini, claude-3-5-sonnet-20240620)", text: $aiService.customModel)
+                                .textFieldStyle(.roundedBorder)
+                        } else {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Base URL")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                Text(aiService.customBaseURL)
+                                    .font(.system(.body, design: .monospaced))
+                                
+                                Text("Model")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                Text(aiService.customModel)
+                                    .font(.system(.body, design: .monospaced))
+                            }
+                        }
                         
                         if aiService.isAPIKeyValid {
-                            // Show masked API key when valid
                             Text("API Key")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
@@ -385,7 +400,6 @@ struct APIKeyManagementView: View {
                                 .buttonStyle(.borderless)
                             }
                         } else {
-                            // Show API key input when not valid
                             Text("Enter your API Key")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
