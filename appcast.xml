@@ -3,22 +3,20 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>1.20</title>
+            <title>1.21</title>
             <pubDate>Sat, 6 Apr 2025 12:00:00 +0545</pubDate>
-            <sparkle:version>120</sparkle:version>
-            <sparkle:shortVersionString>1.20</sparkle:shortVersionString>
+            <sparkle:version>121</sparkle:version>
+            <sparkle:shortVersionString>1.21</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
                     <h3>What's New in Version 1.20 🚀⚡</h3>
                              <ul>
-                    <li>🛠️ Improved the hallucination issues for short recordings.</li>
-                    <li>🚀 Added support for Large V2 Models</li>
-                    <li>🔄 Added support for Mistral AI by @vaygr</li>
-                    <li>🔊 Fixed the play/pause issue on sequioa 15.4 (changed it to mute/unmute functionality)</li>
-                    <li>🔍 Fixed Ollama Models not showing up</li>
+                    <li>🚀 Added coreML support(2-4X better performance).</li>
+                    <li>🔍 Removed unnecessary Models/ re-designed the models View</li>
+                    
                              </ul>
             ]]></description>
-            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.20/VoiceInk.dmg" length="7910036" type="application/octet-stream" sparkle:edSignature="cnyTdJ/U+VeOBW6hp4JWEDCfNJl7hk0Th57HBuBq+pw35G4jvyMO3ytJxjKzSDCArevLxFiW8mgfbcMdD5wpCw=="/>
+            <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.21/VoiceInk.dmg" length="7987509" type="application/octet-stream" sparkle:edSignature="0Rbt/SMYd5GP+f9oxfvMLBDgjftfeB/gazyA4jPOBKSQ5AdeN2h7f9vDf6QSGyZ0pRukS/CihHjQLx8OcOWRBg=="/>
         </item>
     </channel>
 </rss>
