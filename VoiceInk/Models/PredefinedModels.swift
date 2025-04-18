@@ -77,6 +77,17 @@ import Foundation
              hash: "c78c86eb1a8faa21b369bcd33207cc90d64ae9df"
          ),
          PredefinedModel(
+             name: "ggml-base.en",
+             displayName: "Base (English)",
+             size: "142 MiB",
+             supportedLanguages: getLanguageDictionary(isMultilingual: false),
+             description: "Base model optimized for English, good balance between speed and accuracy",
+             speed: 0.8,
+             accuracy: 0.75,
+             ramUsage: 0.5,
+             hash: "137c40403d78fd54d454da0f9bd998f78703390c"
+         ),
+         PredefinedModel(
              name: "ggml-large-v2",
              displayName: "Large v2",
              size: "2.9 GiB",
