@@ -85,10 +85,10 @@ struct SettingsView: View {
                                     PushToTalkKeySelector(selectedKey: $hotkeyManager.pushToTalkKey)
                                         .padding(.vertical, 4)
                                     
-                                    VideoCTAView(
-                                        url: "https://dub.sh/shortcut",
-                                        subtitle: "Pro tip for Push-to-Talk setup"
-                                    )
+                                    Text("Quick tap the key once to start hands-free recording (tap again to stop).\nPress and hold the key for push-to-talk (release to stop recording).")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
                                 .padding(.top, 4)
                             }
