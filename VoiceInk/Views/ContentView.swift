@@ -14,9 +14,8 @@ enum ViewType: String, CaseIterable {
     case permissions = "Permissions"
     case audioInput = "Audio Input"
     case dictionary = "Dictionary"
-    case license = "VoiceInk Pro"
     case settings = "Settings"
-    case about = "About"
+    case license = "VoiceInk Pro"
     
     var icon: String {
         switch self {
@@ -30,9 +29,8 @@ enum ViewType: String, CaseIterable {
         case .permissions: return "shield.fill"
         case .audioInput: return "mic.fill"
         case .dictionary: return "character.book.closed.fill"
-        case .license: return "checkmark.seal.fill"
         case .settings: return "gearshape.fill"
-        case .about: return "info.circle.fill"
+        case .license: return "checkmark.seal.fill"
         }
     }
 }
@@ -258,8 +256,6 @@ struct ContentView: View {
         case .settings:
             SettingsView()
                 .environmentObject(whisperState)
-        case .about:
-            AboutView()
         case .license:
             LicenseManagementView()
         case .permissions:

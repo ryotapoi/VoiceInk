@@ -3,6 +3,7 @@ import SwiftUI
 struct LicenseManagementView: View {
     @StateObject private var licenseViewModel = LicenseViewModel()
     @Environment(\.colorScheme) private var colorScheme
+    let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
     
     var body: some View {
         ScrollView {
@@ -43,8 +44,15 @@ struct LicenseManagementView: View {
                         .font(.system(size: 32))
                         .foregroundStyle(.blue)
                     
-                    Text(licenseViewModel.licenseState == .licensed ? "VoiceInk Pro" : "Upgrade to Pro")
-                        .font(.system(size: 32, weight: .bold))
+                    HStack(alignment: .lastTextBaseline, spacing: 8) { 
+                        Text(licenseViewModel.licenseState == .licensed ? "VoiceInk Pro" : "Upgrade to Pro")
+                            .font(.system(size: 32, weight: .bold))
+                        
+                        Text("v\(appVersion)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.bottom, 4)
+                    }
                 }
                 
                 Text(licenseViewModel.licenseState == .licensed ? 

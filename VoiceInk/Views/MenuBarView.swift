@@ -187,11 +187,6 @@ struct MenuBarView: View {
             }
             .disabled(!updaterViewModel.canCheckForUpdates)
             
-            Button("About VoiceInk") {
-                NSApplication.shared.orderFrontStandardAboutPanel(nil)
-                NSApp.activate(ignoringOtherApps: true)
-            }
-            
             Button("Help and Support") {
                 openMailForSupport()
             }
