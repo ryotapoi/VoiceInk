@@ -34,7 +34,8 @@ class Recorder: ObservableObject {
     private func handleDeviceChange() async {
         guard !isReconfiguring else { return }
         isReconfiguring = true
-        
+        logger.notice("🔄 Handling device change...")
+
         if engine != nil {
             let currentURL = file?.url
             stopRecording()
@@ -43,30 +44,46 @@ class Recorder: ObservableObject {
             if let url = currentURL {
                 do {
                     try await startRecording(toOutputFile: url)
-                } catch {}
+                    logger.notice("✅ Successfully restarted recording after device change.")
+                } catch {
+                    logger.error("❌ Failed to restart recording after device change: \(error.localizedDescription)")
+                }
+            } else {
+                logger.warning("⚠️ No file URL available to restart recording after device change.")
             }
         }
         isReconfiguring = false
+        logger.notice("✅ Device change handled.")
     }
     
     private func configureAudioSession(with deviceID: AudioDeviceID) async throws {
+        logger.info("🔊 Configuring audio session for device ID: \(deviceID)...")
         try? await Task.sleep(nanoseconds: 50_000_000)
         do {
-            let format = try AudioDeviceConfiguration.configureAudioSession(with: deviceID)
+            _ = try AudioDeviceConfiguration.configureAudioSession(with: deviceID)
             try AudioDeviceConfiguration.setDefaultInputDevice(deviceID)
+            logger.info("✅ Audio session configured successfully.")
         } catch {
+            logger.error("❌ Failed to configure audio session: \(error.localizedDescription)")
             throw error
         }
         try? await Task.sleep(nanoseconds: 50_000_000)
     }
     
     func startRecording(toOutputFile url: URL) async throws {
+        deviceManager.isRecordingActive = true
+        logger.notice("▶️ Attempting to start recording to: \(url.lastPathComponent)")
+
         let wasMuted = await mediaController.muteSystemAudio()
         let deviceID = deviceManager.getCurrentDevice()
         if deviceID != 0 {
             do {
                 try await configureAudioSession(with: deviceID)
-            } catch {}
+            } catch {
+                logger.warning("⚠️ Failed to configure audio session for device \(deviceID), attempting to continue: \(error.localizedDescription)")
+            }
+        } else {
+            logger.warning("⚠️ No input device found (deviceID is 0). Attempting to record with default.")
         }
         
         engine = AVAudioEngine()
@@ -160,7 +177,9 @@ class Recorder: ObservableObject {
         
         do {
             try engine!.start()
+            logger.notice("✅ Recording started successfully.")
         } catch {
+            logger.error("❌ Failed to start audio engine: \(error.localizedDescription)")
             await mediaController.unmuteSystemAudio()
             stopRecording()
             throw RecorderError.couldNotStartRecording
@@ -168,10 +187,21 @@ class Recorder: ObservableObject {
     }
     
     func stopRecording() {
+        let wasRunning = engine != nil
+        defer {
+            deviceManager.isRecordingActive = false
+            engine?.stop()
+            engine = nil
+        }
+
+        if wasRunning {
+            logger.notice("⏹️ Recording stopped.")
+        } else {
+            logger.info("ℹ️ stopRecording called, but engine was not running.")
+        }
+
         audioMeter = AudioMeter(averagePower: 0, peakPower: 0)
         engine?.inputNode.removeTap(onBus: 0)
-        engine?.stop()
-        engine = nil
         file = nil
         NotificationCenter.default.post(name: NSNotification.Name("AudioDeviceChanged"), object: nil)
         Task {

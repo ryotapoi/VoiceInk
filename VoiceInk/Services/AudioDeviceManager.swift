@@ -23,6 +23,8 @@ class AudioDeviceManager: ObservableObject {
     @Published var prioritizedDevices: [PrioritizedDevice] = []
     private var fallbackDeviceID: AudioDeviceID?
     
+    var isRecordingActive: Bool = false
+    
     static let shared = AudioDeviceManager()
     
     init() {
@@ -385,7 +387,9 @@ class AudioDeviceManager: ObservableObject {
             }
             
             // Notify UI of changes
-            NotificationCenter.default.post(name: NSNotification.Name("AudioDeviceChanged"), object: nil)
+            if !self.isRecordingActive {
+                NotificationCenter.default.post(name: NSNotification.Name("AudioDeviceChanged"), object: nil)
+            }
         }
     }
     
@@ -452,6 +456,9 @@ class AudioDeviceManager: ObservableObject {
     }
     
     private func notifyDeviceChange() {
-        NotificationCenter.default.post(name: NSNotification.Name("AudioDeviceChanged"), object: nil)
+        // Only notify if recording is not active
+        if !isRecordingActive {
+            NotificationCenter.default.post(name: NSNotification.Name("AudioDeviceChanged"), object: nil)
+        }
     }
 } 
