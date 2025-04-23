@@ -17,13 +17,13 @@ enum PromptIcon: String, Codable, CaseIterable {
     case briefcaseFill = "briefcase.fill"
     
     // Technical
-    case codeFill = "chevron.left.forwardslash.chevron.right.fill"
+    case codeFill = "curlybraces"
     case terminalFill = "terminal.fill"
     case gearFill = "gearshape.fill"
     
     // Content
     case blogFill = "doc.text.image.fill"
-    case notesFill = "note.text"
+    case notesFill = "note"
     case bookFill = "book.fill"
     case bookmarkFill = "bookmark.fill"
     case pencilFill = "pencil.circle.fill"
@@ -31,7 +31,7 @@ enum PromptIcon: String, Codable, CaseIterable {
     // Media & Creative
     case videoFill = "video.fill"
     case micFill = "mic.fill"
-    case musicFill = "music.note.list"
+    case musicFill = "music.note"
     case photoFill = "photo.fill"
     case brushFill = "paintbrush.fill"
     

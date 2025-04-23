@@ -291,19 +291,15 @@ extension WhisperState {
         recorder.stopRecording()
         try? await Task.sleep(nanoseconds: 500_000_000)
         
-        let canCleanup = !isRecording && !isProcessing
-        
-        if canCleanup {
-            await whisperContext?.releaseResources()
-            whisperContext = nil
-            isModelLoaded = false
-        }
+        await whisperContext?.releaseResources()
+        whisperContext = nil
+        isModelLoaded = false
     }
     
     // MARK: - Helper Methods
     
     private func logError(_ message: String, _ error: Error) {
-        messageLog += "\(message): \(error.localizedDescription)\n"
+        logger.notice("\(message): \(error.localizedDescription)\n")  
     }
 }
 

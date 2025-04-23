@@ -95,6 +95,7 @@ class Recorder: ObservableObject {
         } catch {
             logger.error("Failed to create audio file: \(error.localizedDescription)")
             await mediaController.unmuteSystemAudio()
+            stopRecording()
             throw RecorderError.couldNotStartRecording
         }
         
@@ -161,6 +162,7 @@ class Recorder: ObservableObject {
             try engine!.start()
         } catch {
             await mediaController.unmuteSystemAudio()
+            stopRecording()
             throw RecorderError.couldNotStartRecording
         }
     }
