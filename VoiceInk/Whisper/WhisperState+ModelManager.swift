@@ -303,7 +303,7 @@ extension WhisperState {
     // MARK: - Helper Methods
     
     private func logError(_ message: String, _ error: Error) {
-        messageLog += "\(message): \(error.localizedDescription)\n"
+        self.logger.error("\(message): \(error.localizedDescription)")
     }
 }
 
