@@ -59,14 +59,7 @@ class AudioTranscriptionService: ObservableObject {
         
         // Get audio duration
         let audioAsset = AVURLAsset(url: url)
-        var duration: TimeInterval = 0
-        
-        if #available(macOS 13.0, *) {
-            let durationValue = try await audioAsset.load(.duration)
-            duration = CMTimeGetSeconds(durationValue)
-        } else {
-            duration = CMTimeGetSeconds(audioAsset.duration)
-        }
+        let duration = CMTimeGetSeconds(audioAsset.duration)
         
         // Create a permanent copy of the audio file
         let recordingsDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]

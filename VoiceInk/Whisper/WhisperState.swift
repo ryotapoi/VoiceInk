@@ -74,7 +74,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     let enhancementService: AIEnhancementService?
     var licenseViewModel: LicenseViewModel
     let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "WhisperState")
-    private var transcriptionStartTime: Date?
     var notchWindowManager: NotchWindowManager?
     var miniWindowManager: MiniWindowManager?
     
@@ -122,9 +121,8 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             }
             await recorder.stopRecording()
             if let recordedFile {
-                let duration = Date().timeIntervalSince(transcriptionStartTime ?? Date())
                 if !shouldCancelRecording {
-                    await transcribeAudio(recordedFile, duration: duration)
+                    await transcribeAudio(recordedFile)
                 }
             } else {
                 logger.error("❌ No recorded file found after stopping recording")
@@ -153,7 +151,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                                 create: true)
                                 .appending(path: "output.wav")
                             self.recordedFile = file
-                            self.transcriptionStartTime = Date()
                             await MainActor.run {
                                 self.isRecording = true
                                 self.isVisualizerActive = true
@@ -227,7 +224,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         }
     }
 
-    private func transcribeAudio(_ url: URL, duration: TimeInterval) async {
+    private func transcribeAudio(_ url: URL) async {
         if shouldCancelRecording { return }
         await MainActor.run {
             isProcessing = true
@@ -268,6 +265,12 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             if shouldCancelRecording { return }
             let data = try readAudioSamples(url)
             if shouldCancelRecording { return }
+            
+            // Get the actual audio duration from the file
+            let audioAsset = AVURLAsset(url: url)
+            let actualDuration = CMTimeGetSeconds(audioAsset.duration)
+            logger.notice("📊 Audio file duration: \(actualDuration) seconds")
+            
             await whisperContext.setPrompt(whisperPrompt.transcriptionPrompt)
             if shouldCancelRecording { return }
             await whisperContext.fullTranscribe(samples: data)
@@ -287,7 +290,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                     let enhancedText = try await enhancementService.enhance(text)
                     let newTranscription = Transcription(
                         text: text,
-                        duration: duration,
+                        duration: actualDuration,
                         enhancedText: enhancedText,
                         audioFileURL: permanentURLString
                     )
@@ -297,7 +300,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 } catch {
                     let newTranscription = Transcription(
                         text: text,
-                        duration: duration,
+                        duration: actualDuration,
                         audioFileURL: permanentURLString
                     )
                     modelContext.insert(newTranscription)
@@ -306,7 +309,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             } else {
                 let newTranscription = Transcription(
                     text: text,
-                    duration: duration,
+                    duration: actualDuration,
                     audioFileURL: permanentURLString
                 )
                 modelContext.insert(newTranscription)
