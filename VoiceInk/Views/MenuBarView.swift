@@ -188,7 +188,7 @@ struct MenuBarView: View {
             .disabled(!updaterViewModel.canCheckForUpdates)
             
             Button("Help and Support") {
-                openMailForSupport()
+                EmailSupport.openSupportEmail()
             }
             
             Divider()
@@ -197,12 +197,5 @@ struct MenuBarView: View {
                 NSApplication.shared.terminate(nil)
             }
         }
-    }
-    
-    private func openMailForSupport() {
-        let subject = "VoiceInk Help & Support"
-        let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let mailtoURL = URL(string: "mailto:prakashjoshipax@gmail.com?subject=\(encodedSubject)")!
-        NSWorkspace.shared.open(mailtoURL)
     }
 }

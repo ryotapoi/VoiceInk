@@ -94,7 +94,7 @@ struct TimeEfficiencyView: View {
         HStack {
             timeSavedView
             Spacer()
-            discordCommunityLink
+            reportIssueButton
         }
         .padding(.horizontal, 24)
     }
@@ -112,48 +112,39 @@ struct TimeEfficiencyView: View {
         }
     }
     
-    private var discordCommunityLink: some View {
-        Link(destination: URL(string: "https://discord.gg/xryDy57nYD")!) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 12) {
-                    Image(systemName: "ellipsis.message.fill")
-                        .foregroundStyle(accentGradient)
-                        .font(.system(size: 36))
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Need Support?")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                        
-                        Text("Got Feature Ideas? We're Listening!")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
+    private var reportIssueButton: some View {
+        Button(action: {
+            EmailSupport.openSupportEmail()
+        }) {
+            HStack(alignment: .center, spacing: 12) {
+                // Left icon
+                Image(systemName: "exclamationmark.bubble.fill")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(.white)
                 
-                HStack {
-                    Text("JOIN DISCORD")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue)
-                        .cornerRadius(6)
-                    
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(Color.blue.opacity(0.7))
-                }
+                // Center text
+                Text("Feedback or Issues?")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.white)
+                
+                Spacer(minLength: 8)
+                
+                // Right button
+                Text("Report")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color.accentColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(.white))
             }
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(nsColor: .controlBackgroundColor))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-            )
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .background(accentGradient)
+            .cornerRadius(10)
         }
+        .buttonStyle(.plain)
+        .shadow(color: Color.accentColor.opacity(0.2), radius: 3, y: 1)
+        .frame(maxWidth: 280)
     }
     
     private var efficiencyGradient: LinearGradient {

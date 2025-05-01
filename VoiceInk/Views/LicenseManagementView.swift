@@ -83,9 +83,7 @@ struct LicenseManagementView: View {
                         .buttonStyle(.plain)
                         
                         Button {
-                            if let url = URL(string: "mailto:prakashjoshipax@gmail.com") {
-                                NSWorkspace.shared.open(url)
-                            }
+                            EmailSupport.openSupportEmail()
                         } label: {
                             featureItem(icon: "envelope.fill", title: "Email Support", color: .orange)
                         }
