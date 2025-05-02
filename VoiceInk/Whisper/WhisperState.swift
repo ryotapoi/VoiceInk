@@ -395,8 +395,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         let fileName = "\(UUID().uuidString).wav"
         let permanentURL = recordingsDirectory.appendingPathComponent(fileName)
         try FileManager.default.copyItem(at: tempURL, to: permanentURL)
-     
-        try? FileManager.default.removeItem(at: tempURL)
         return permanentURL
     }
 }
