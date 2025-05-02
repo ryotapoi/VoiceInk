@@ -9,6 +9,8 @@ struct EmailSupport {
         App Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")
         macOS Version: \(ProcessInfo.processInfo.operatingSystemVersionString)
         Device: \(getMacModel())
+        CPU: \(getCPUInfo())
+        Memory: \(getMemoryInfo())
         """
         
         let body = """
@@ -53,4 +55,18 @@ struct EmailSupport {
         sysctlbyname("hw.model", &machine, &size, nil, 0)
         return String(cString: machine)
     }
+    
+    private static func getCPUInfo() -> String {
+        var size = 0
+        sysctlbyname("machdep.cpu.brand_string", nil, &size, nil, 0)
+        var buffer = [CChar](repeating: 0, count: size)
+        sysctlbyname("machdep.cpu.brand_string", &buffer, &size, nil, 0)
+        return String(cString: buffer)
+    }
+    
+    private static func getMemoryInfo() -> String {
+        let totalMemory = ProcessInfo.processInfo.physicalMemory
+        return ByteCountFormatter.string(fromByteCount: Int64(totalMemory), countStyle: .memory)
+    }
+    
 } 
