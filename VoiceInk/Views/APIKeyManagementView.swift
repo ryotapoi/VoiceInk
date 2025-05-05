@@ -602,11 +602,3 @@ struct APIKeyManagementView: View {
         return String(format: "%.1f GB", gigabytes)
     }
 }
-
-#Preview {
-    APIKeyManagementView()
-        .environmentObject(AIService())
-}
-
-
-
