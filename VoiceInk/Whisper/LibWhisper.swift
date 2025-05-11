@@ -85,7 +85,7 @@ actor WhisperContext {
                 let langId = whisper_full_lang_id(context)
                 let detectedLang = String(cString: whisper_lang_str(langId))
                 logger.notice("✅ Transcription completed - Language: \(detectedLang)")
-                whisper_print_timings(context)
+                
             }
         }
         
@@ -102,8 +102,7 @@ actor WhisperContext {
         // Apply hallucination filtering
         let filteredTranscription = WhisperHallucinationFilter.filter(transcription)
 
-        // Always apply text formatting
-        return WhisperTextFormatter.format(filteredTranscription)
+        return filteredTranscription
     }
 
     static func createContext(path: String) async throws -> WhisperContext {

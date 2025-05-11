@@ -90,6 +90,7 @@ class AudioTranscriptionManager: ObservableObject {
                 try await whisperContext?.fullTranscribe(samples: samples)
                 var text = await whisperContext?.getTranscription() ?? ""
                 text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                text = WhisperTextFormatter.format(text)
                 
                 // Apply word replacements if enabled
                 if UserDefaults.standard.bool(forKey: "IsWordReplacementEnabled") {
