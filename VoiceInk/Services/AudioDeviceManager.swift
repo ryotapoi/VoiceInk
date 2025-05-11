@@ -89,15 +89,11 @@ class AudioDeviceManager: ObservableObject {
     }
     
     private func fallbackToDefaultDevice() {
-        if let fallbackID = fallbackDeviceID {
-            selectedDeviceID = fallbackID
-            logger.info("Using fallback device ID: \(fallbackID)")
-            if let name = getDeviceName(deviceID: fallbackID) {
-                logger.info("Fallback to built-in microphone: \(name)")
-            }
-        } else {
-            logger.error("No fallback device available")
-        }
+        // Instead of just setting a fallback device ID, explicitly switch to system default mode.
+        // selectInputMode(.systemDefault) will handle setting inputMode,
+        // clearing selectedDeviceID, and updating UserDefaults.
+        selectInputMode(.systemDefault)
+        logger.info("Switched to system default audio input mode due to fallback.")
     }
     
     func loadAvailableDevices(completion: (() -> Void)? = nil) {
