@@ -288,15 +288,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             let actualDuration = CMTimeGetSeconds(audioAsset.duration)
             logger.notice("📊 Audio file duration: \(actualDuration) seconds")
             
-            // Check if audio is too short (less than 1 second)
-            if actualDuration < 1.0 {
-                logger.notice("⚠️ Audio recording too short (< 1s), skipping transcription")
-                try? FileManager.default.removeItem(at: url)
-                await dismissMiniRecorder()
-                await cleanupModelResources()
-                return
-            }
-            
             await whisperContext.setPrompt(whisperPrompt.transcriptionPrompt)
             if shouldCancelRecording { return }
             await whisperContext.fullTranscribe(samples: data)
