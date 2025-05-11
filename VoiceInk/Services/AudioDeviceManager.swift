@@ -21,7 +21,7 @@ class AudioDeviceManager: ObservableObject {
     @Published var selectedDeviceID: AudioDeviceID?
     @Published var inputMode: AudioInputMode = .systemDefault
     @Published var prioritizedDevices: [PrioritizedDevice] = []
-    private var fallbackDeviceID: AudioDeviceID?
+     var fallbackDeviceID: AudioDeviceID?
     
     var isRecordingActive: Bool = false
     
@@ -44,7 +44,7 @@ class AudioDeviceManager: ObservableObject {
         setupDeviceChangeNotifications()
     }
     
-    private func setupFallbackDevice() {
+     func setupFallbackDevice() {
         let deviceID: AudioDeviceID? = getDeviceProperty(
             deviceID: AudioObjectID(kAudioObjectSystemObject),
             selector: kAudioHardwarePropertyDefaultInputDevice
