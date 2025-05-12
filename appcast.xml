@@ -3,13 +3,13 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>1.26</title>
-            <pubDate>Sat, 5 May 2025 12:00:00 +0545</pubDate>
+            <title>1.27</title>
+            <pubDate>Sat, 12 May 2025 12:00:00 +0545</pubDate>
             <sparkle:version>126</sparkle:version>
-            <sparkle:shortVersionString>1.26</sparkle:shortVersionString>
+            <sparkle:shortVersionString>1.27</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                    <h3>What's New in Version 1.26 🚀⚡</h3>
+                    <h3>What's New in Version 1.27 🚀⚡</h3>
                             <ul>
                                 <li>🔄 Added support for AI model selection for each provider</li>
                                 <li>⚡️ Optimized recording start to be faster & more responsive</li>
@@ -17,7 +17,7 @@
                                 <li>📋 Added the Copy button to Transcripts in Audio Transcribe View</li>
                             </ul>
             ]]></description>
-           <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.26/VoiceInk.dmg" length="8026153" type="application/octet-stream" sparkle:edSignature="v3N2skQ9ZWTiMs/IxbN325LXdFOgE6sb4/DyCH3IBRvQWcVATZjTqKzAwX6rhoPs4V/MSdoBJLaIfWzbkHb6Bg=="/>
+           <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.27/VoiceInk.dmg" length="8032839" type="application/octet-stream" sparkle:edSignature="N9V4CEE4g3DvMrsBDHDHsBI/8siFmNALeOeO85l3nJLYfymFycK9sWk98losuxaeYZx6KxJg7N29lkWKyEFoAQ=="/>
         </item>
     </channel>
 </rss>
