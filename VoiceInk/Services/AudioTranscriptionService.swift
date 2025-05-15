@@ -59,7 +59,8 @@ class AudioTranscriptionService: ObservableObject {
         
         // Get audio duration
         let audioAsset = AVURLAsset(url: url)
-        let duration = CMTimeGetSeconds(audioAsset.duration)
+        let durationTime = try await audioAsset.load(.duration)
+        let duration = CMTimeGetSeconds(durationTime)
         
         // Create a permanent copy of the audio file
         let recordingsDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -118,12 +119,7 @@ class AudioTranscriptionService: ObservableObject {
                         audioFileURL: permanentURLString
                     )
                     modelContext.insert(newTranscription)
-                    do {
-                        try modelContext.save()
-                    } catch {
-                        logger.error("❌ Failed to save transcription: \(error.localizedDescription)")
-                        messageLog += "Failed to save transcription: \(error.localizedDescription)\n"
-                    }
+                    modelContext.save()
                     
                     await MainActor.run {
                         isTranscribing = false
@@ -139,12 +135,7 @@ class AudioTranscriptionService: ObservableObject {
                         audioFileURL: permanentURLString
                     )
                     modelContext.insert(newTranscription)
-                    do {
-                        try modelContext.save()
-                    } catch {
-                        logger.error("❌ Failed to save transcription: \(error.localizedDescription)")
-                        messageLog += "Failed to save transcription: \(error.localizedDescription)\n"
-                    }
+                    modelContext.save()
                     
                     await MainActor.run {
                         isTranscribing = false
@@ -160,12 +151,7 @@ class AudioTranscriptionService: ObservableObject {
                     audioFileURL: permanentURLString
                 )
                 modelContext.insert(newTranscription)
-                do {
-                    try modelContext.save()
-                } catch {
-                    logger.error("❌ Failed to save transcription: \(error.localizedDescription)")
-                    messageLog += "Failed to save transcription: \(error.localizedDescription)\n"
-                }
+                modelContext.save()
                 
                 await MainActor.run {
                     isTranscribing = false

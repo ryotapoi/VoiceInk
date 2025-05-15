@@ -71,7 +71,8 @@ class AudioTranscriptionManager: ObservableObject {
                 
                 // Get audio duration
                 let audioAsset = AVURLAsset(url: url)
-                let duration = CMTimeGetSeconds(audioAsset.duration)
+                let durationTime = try await audioAsset.load(.duration)
+                let duration = CMTimeGetSeconds(durationTime)
                 
                 // Create permanent copy of the audio file
                 let recordingsDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -111,7 +112,7 @@ class AudioTranscriptionManager: ObservableObject {
                             audioFileURL: permanentURL.absoluteString
                         )
                         modelContext.insert(transcription)
-                        try modelContext.save()
+                        modelContext.save()
                         currentTranscription = transcription
                     } catch {
                         logger.error("Enhancement failed: \(error.localizedDescription)")
@@ -122,7 +123,7 @@ class AudioTranscriptionManager: ObservableObject {
                             audioFileURL: permanentURL.absoluteString
                         )
                         modelContext.insert(transcription)
-                        try modelContext.save()
+                        modelContext.save()
                         currentTranscription = transcription
                     }
                 } else {
@@ -132,13 +133,13 @@ class AudioTranscriptionManager: ObservableObject {
                         audioFileURL: permanentURL.absoluteString
                     )
                     modelContext.insert(transcription)
-                    try modelContext.save()
+                    modelContext.save()
                     currentTranscription = transcription
                 }
                 
                 processingPhase = .completed
-                try? await Task.sleep(nanoseconds: 1_500_000_000)
-                await finishProcessing()
+                try await Task.sleep(nanoseconds: 1_500_000_000)
+                finishProcessing()
                 
             } catch {
                 await handleError(error)
