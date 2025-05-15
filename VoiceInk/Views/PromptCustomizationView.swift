@@ -66,7 +66,7 @@ struct PromptCustomizationView: View {
         .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(10)
         // Reset the editor when language changes
-        .onChange(of: selectedLanguage) { _ in
+        .onChange(of: selectedLanguage) { oldValue, newValue in
             if isEditing {
                 customPrompt = whisperPrompt.getLanguagePrompt(for: selectedLanguage)
             }

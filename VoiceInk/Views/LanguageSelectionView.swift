@@ -93,7 +93,7 @@ struct LanguageSelectionView: View {
                             }
                         }
                         .pickerStyle(MenuPickerStyle())
-                        .onChange(of: selectedLanguage) { newValue in
+                        .onChange(of: selectedLanguage) { oldValue, newValue in
                             updateLanguage(newValue)
                         }
 

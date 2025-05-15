@@ -366,7 +366,7 @@ struct PowerModeView: View {
                             .toggleStyle(SwitchToggleStyle(tint: .blue))
                             .labelsHidden()
                             .scaleEffect(1.2)
-                            .onChange(of: powerModeManager.isPowerModeEnabled) { _ in
+                            .onChange(of: powerModeManager.isPowerModeEnabled) { oldValue, newValue in
                                 powerModeManager.savePowerModeEnabled()
                             }
                     }
