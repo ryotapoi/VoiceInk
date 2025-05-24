@@ -615,6 +615,11 @@ struct ConfigurationView: View {
                     selectedAIModel = aiService.currentModel
                 }
             }
+            
+            // Select first prompt if AI enhancement is enabled and no prompt is selected
+            if isAIEnhancementEnabled && selectedPromptId == nil {
+                selectedPromptId = enhancementService.allPrompts.first?.id
+            }
         }
     }
     
