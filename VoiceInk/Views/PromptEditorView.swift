@@ -172,25 +172,21 @@ struct PromptEditorView: View {
                                 .font(.headline)
                                 .foregroundColor(.secondary)
                             
-                            Text("Scroll horizontally to see more templates")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                            let columns = [
+                                GridItem(.adaptive(minimum: 150, maximum: 200), spacing: 16)
+                            ]
                             
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 16) {
-                                    ForEach(PromptTemplates.all) { template in
-                                        TemplateButton(prompt: template) {
-                                            title = template.title
-                                            promptText = template.promptText
-                                            selectedIcon = template.icon
-                                            description = template.description
-                                        }
+                            LazyVGrid(columns: columns, spacing: 16) {
+                                ForEach(PromptTemplates.all) { template in
+                                    TemplateButton(prompt: template) {
+                                        title = template.title
+                                        promptText = template.promptText
+                                        selectedIcon = template.icon
+                                        description = template.description
                                     }
                                 }
-                                .padding(.horizontal, 2)
-                                .padding(.bottom, 2)
                             }
-                            .scrollClipDisabled(true)
+                            .padding(.vertical, 4)
                         }
                         .padding(.horizontal)
                     }
@@ -231,28 +227,28 @@ struct TemplateButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: prompt.icon.rawValue)
-                        .font(.system(size: 16))
-                        .foregroundColor(.accentColor)
+            HStack(alignment: .center, spacing: 12) {
+                Image(systemName: prompt.icon.rawValue)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.accentColor)
+                    .frame(width: 28, height: 28)
+                    .background(Color.accentColor.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                VStack(alignment: .leading, spacing: 4) {
                     Text(prompt.title)
-                        .fontWeight(.medium)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
                 }
-                
-                Text(prompt.description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
             }
-            .frame(width: 200, alignment: .leading)
-            .padding()
+            .padding(12)
+            .frame(height: 60)
             .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                    .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)

@@ -28,7 +28,7 @@ enum PromptTemplates {
         [
             TemplatePrompt(
                 id: UUID(),
-                title: "AI Assistant",
+                title: "Chat",
                 promptText: """
                 Primary Rules:
                 We are in a causual chat conversation.
