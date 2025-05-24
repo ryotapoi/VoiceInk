@@ -151,6 +151,8 @@ struct ConfigurationView: View {
                             }
                         }
                         .buttonStyle(.plain)
+                        .disabled(mode.isEditingDefault)
+                        .opacity(mode.isEditingDefault ? 0.5 : 1)
                         
                         TextField("Name your power mode", text: $configName)
                             .font(.system(size: 18, weight: .bold))
