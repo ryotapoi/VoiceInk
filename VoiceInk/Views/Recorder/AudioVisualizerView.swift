@@ -97,7 +97,7 @@ struct AudioVisualizer: View {
 struct StaticVisualizer: View {
     private let barCount = 12
     private let barWidth: CGFloat = 3.0
-    private let staticHeight: CGFloat = 3.0
+    private let staticHeight: CGFloat = 4.0 
     private let barSpacing: CGFloat = 2.0
     let color: Color
     

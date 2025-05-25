@@ -78,7 +78,6 @@ struct NotchRecorderView: View {
                     HStack(spacing: 0) {
                         Spacer() // Push visualizer to the right
                         
-                        // Visualizer - contained within right area with scaling
                         Group {
                             if whisperState.isProcessing {
                                 StaticVisualizer(color: .white)
@@ -88,10 +87,10 @@ struct NotchRecorderView: View {
                                     color: .white,
                                     isActive: whisperState.isRecording
                                 )
-                                // Apply a vertical scale transform to fit within the menu bar
-                                .scaleEffect(y: min(1.0, (menuBarHeight - 8) / 25), anchor: .center)
                             }
                         }
+                       
+                        .scaleEffect(y: min(1.0, (menuBarHeight - 8) / 25), anchor: .center)
                         .frame(width: 30)
                         .padding(.trailing, 8) // Add padding to keep it away from the edge
                     }
