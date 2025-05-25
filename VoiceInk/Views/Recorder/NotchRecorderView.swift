@@ -47,36 +47,7 @@ struct NotchRecorderView: View {
                         }
                         .frame(width: 22)
                         
-                        // Empty space for future use
-                        Spacer()
-                            .frame(width: 22)
-                    }
-                    .frame(width: 44) // Fixed width for controls
-                    .padding(.leading, 16)
-                    
-                    // Center section with exact notch width
-                    Rectangle()
-                        .fill(Color.clear)
-                        .frame(width: exactNotchWidth)
-                        .contentShape(Rectangle()) // Make the entire area tappable
-                    
-                    // Right side group with fixed width
-                    HStack(spacing: 8) {
-                        // Visualizer - moved to first position
-                        Group {
-                            if whisperState.isProcessing {
-                                NotchStaticVisualizer(color: .white)
-                            } else {
-                                NotchAudioVisualizer(
-                                    audioMeter: recorder.audioMeter,
-                                    color: .white,
-                                    isActive: whisperState.isRecording
-                                )
-                            }
-                        }
-                        .frame(width: 22)
-                        
-                        // Power Mode Button - moved to second position
+                        // Power Mode Button - moved from right side
                         NotchToggleButton(
                             isEnabled: powerModeManager.isPowerModeEnabled,
                             icon: powerModeManager.currentActiveConfiguration.emoji,
@@ -88,8 +59,40 @@ struct NotchRecorderView: View {
                         .popover(isPresented: $showPowerModePopover, arrowEdge: .bottom) {
                             PowerModePopover()
                         }
+                        
+                        Spacer()
                     }
-                    .frame(width: 44) // Fixed width for controls
+                    .frame(width: 64) // Increased width for both controls
+                    .padding(.leading, 16)
+                    
+                    // Center section with exact notch width
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(width: exactNotchWidth)
+                        .contentShape(Rectangle()) // Make the entire area tappable
+                    
+                    // Right side group with visualizer only
+                    HStack(spacing: 0) {
+                        Spacer() // Push visualizer to the right
+                        
+                        // Visualizer - contained within right area with scaling
+                        Group {
+                            if whisperState.isProcessing {
+                                StaticVisualizer(color: .white)
+                            } else {
+                                AudioVisualizer(
+                                    audioMeter: recorder.audioMeter,
+                                    color: .white,
+                                    isActive: whisperState.isRecording
+                                )
+                                // Apply a vertical scale transform to fit within the menu bar
+                                .scaleEffect(y: min(1.0, (menuBarHeight - 8) / 25), anchor: .center)
+                            }
+                        }
+                        .frame(width: 30)
+                        .padding(.trailing, 8) // Add padding to keep it away from the edge
+                    }
+                    .frame(width: 64) // Increased width to match left side
                     .padding(.trailing, 16)
                 }
                 .frame(height: menuBarHeight)
@@ -244,139 +247,6 @@ struct NotchRecordButton: View {
         } else {
             // Neutral gray for idle state
             return Color(red: 0.3, green: 0.3, blue: 0.35)
-        }
-    }
-}
-
-struct NotchAudioVisualizer: View {
-    let audioMeter: AudioMeter
-    let color: Color
-    let isActive: Bool
-    
-    private let barCount = 5
-    private let minHeight: CGFloat = 3
-    private let maxHeight: CGFloat = 18
-    private let audioThreshold: CGFloat = 0.01
-    
-    @State private var barHeights: [BarLevel] = []
-    
-    struct BarLevel {
-        var average: CGFloat
-        var peak: CGFloat
-    }
-    
-    init(audioMeter: AudioMeter, color: Color, isActive: Bool) {
-        self.audioMeter = audioMeter
-        self.color = color
-        self.isActive = isActive
-        _barHeights = State(initialValue: Array(repeating: BarLevel(average: minHeight, peak: minHeight), count: 5))
-    }
-    
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(0..<barCount, id: \.self) { index in
-                NotchVisualizerBar(
-                    averageHeight: barHeights[index].average,
-                    peakHeight: barHeights[index].peak,
-                    color: color
-                )
-            }
-        }
-        .onChange(of: audioMeter) { oldValue, newValue in
-           
-            if isActive {
-                updateBars()
-            } else {
-                resetBars()
-            }
-        }
-    }
-    
-    private func updateBars() {
-        for i in 0..<barCount {
-            let targetHeight = calculateTargetHeight(for: i)
-            let speed = CGFloat.random(in: 0.4...0.8)
-            
-            withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
-                barHeights[i].average += (targetHeight.average - barHeights[i].average) * speed
-                barHeights[i].peak += (targetHeight.peak - barHeights[i].peak) * speed
-            }
-        }
-    }
-    
-    private func resetBars() {
-        withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
-            for i in 0..<barCount {
-                barHeights[i].average = minHeight
-                barHeights[i].peak = minHeight
-            }
-        }
-    }
-    
-    private func calculateTargetHeight(for index: Int) -> BarLevel {
-        let positionFactor = CGFloat(index) / CGFloat(barCount - 1)
-        let curve = sin(positionFactor * .pi)
-        
-        let randomFactor = Double.random(in: 0.8...1.2)
-        let averageBase = audioMeter.averagePower * randomFactor
-        let peakBase = audioMeter.peakPower * randomFactor
-        
-        let averageHeight = CGFloat(averageBase) * maxHeight * 1.7 * curve
-        let peakHeight = CGFloat(peakBase) * maxHeight * 1.7 * curve
-        
-        let finalAverage = max(minHeight, min(averageHeight, maxHeight))
-        let finalPeak = max(minHeight, min(peakHeight, maxHeight))
-        
-        
-        return BarLevel(
-            average: finalAverage,
-            peak: finalPeak
-        )
-    }
-}
-
-struct NotchVisualizerBar: View {
-    let averageHeight: CGFloat
-    let peakHeight: CGFloat
-    let color: Color
-    
-    var body: some View {
-        ZStack(alignment: .bottom) {
-            // Average level bar
-            RoundedRectangle(cornerRadius: 1.5)
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            color.opacity(0.6),
-                            color.opacity(0.8),
-                            color
-                        ]),
-                        startPoint: .bottom,
-                        endPoint: .top
-                    )
-                )
-                .frame(width: 2, height: averageHeight)
-        
-        }
-        .animation(.spring(response: 0.2, dampingFraction: 0.7, blendDuration: 0), value: averageHeight)
-        .animation(.spring(response: 0.2, dampingFraction: 0.7, blendDuration: 0), value: peakHeight)
-    }
-}
-
-struct NotchStaticVisualizer: View {
-    private let barCount = 5
-    private let barHeights: [CGFloat] = [0.7, 0.5, 0.8, 0.4, 0.6]
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(0..<barCount, id: \.self) { index in
-                NotchVisualizerBar(
-                    averageHeight: barHeights[index] * 18,
-                    peakHeight: barHeights[index] * 18,
-                    color: color
-                )
-            }
         }
     }
 }
