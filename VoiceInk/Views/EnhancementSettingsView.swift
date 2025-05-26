@@ -175,7 +175,7 @@ struct EnhancementSettingsView: View {
                             }
                             
                             VStack(alignment: .leading, spacing: 4) {
-                                Toggle("Screen Capture", isOn: $enhancementService.useScreenCaptureContext)
+                                Toggle("Context Awareness", isOn: $enhancementService.useScreenCaptureContext)
                                     .toggleStyle(.switch)
                                     .disabled(!enhancementService.isEnhancementEnabled)
                                 Text("Learn what is on the screen to understand the context")

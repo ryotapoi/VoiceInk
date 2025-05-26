@@ -601,7 +601,7 @@ struct ConfigurationView: View {
 
                             Divider()
                             
-                            // Add Screen Capture toggle
+                           
                             Toggle("Context Awareness", isOn: $useScreenCapture)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 
