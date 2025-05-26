@@ -12,26 +12,22 @@ class CursorPaster {
             return
         }
         
-        // Save the current pasteboard contents
         let pasteboard = NSPasteboard.general
-        let oldContents = pasteboard.string(forType: .string)
+        let savedItems = pasteboard.pasteboardItems ?? []
         
-        // Set the new text to paste
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
         
-        // Use the preferred paste method based on user settings
         if UserDefaults.standard.bool(forKey: "UseAppleScriptPaste") {
             _ = pasteUsingAppleScript()
         } else {
             pasteUsingCommandV()
         }
         
-        // Restore the original pasteboard content
         DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + pasteCompletionDelay) {
-            pasteboard.clearContents()
-            if let oldContents = oldContents {
-                pasteboard.setString(oldContents, forType: .string)
+            if !savedItems.isEmpty {
+                pasteboard.clearContents()
+                pasteboard.writeObjects(savedItems)
             }
         }
     }
@@ -47,11 +43,9 @@ class CursorPaster {
         if let scriptObject = NSAppleScript(source: script) {
             _ = scriptObject.executeAndReturnError(&error)
             if error != nil {
-                print("AppleScript paste failed: \(error?.description ?? "Unknown error")")
                 logger.notice("AppleScript paste failed with error: \(error?.description ?? "Unknown error")")
                 return false
             }
-            logger.notice("AppleScript paste completed successfully")
             return true
         }
         return false
@@ -73,8 +67,6 @@ class CursorPaster {
         vDown?.post(tap: .cghidEventTap)
         vUp?.post(tap: .cghidEventTap)
         cmdUp?.post(tap: .cghidEventTap)
-        
-        logger.notice("Command+V paste completed")
     }
 }
 
