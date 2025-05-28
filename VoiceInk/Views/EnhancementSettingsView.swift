@@ -1,162 +1,5 @@
 import SwiftUI
 
-extension CustomPrompt {
-    func promptIcon(isSelected: Bool, onTap: @escaping () -> Void, onEdit: ((CustomPrompt) -> Void)? = nil, onDelete: ((CustomPrompt) -> Void)? = nil, assistantTriggerWord: String? = nil) -> some View {
-        VStack(spacing: 8) {
-            ZStack {
-                // Dynamic background with blur effect
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(
-                        LinearGradient(
-                            gradient: isSelected ?
-                                Gradient(colors: [
-                                    Color.accentColor.opacity(0.9),
-                                    Color.accentColor.opacity(0.7)
-                                ]) :
-                                Gradient(colors: [
-                                    Color(NSColor.controlBackgroundColor).opacity(0.95),
-                                    Color(NSColor.controlBackgroundColor).opacity(0.85)
-                                ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        isSelected ?
-                                            Color.white.opacity(0.3) : Color.white.opacity(0.15),
-                                        isSelected ?
-                                            Color.white.opacity(0.1) : Color.white.opacity(0.05)
-                                    ]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
-                    )
-                    .shadow(
-                        color: isSelected ?
-                            Color.accentColor.opacity(0.4) : Color.black.opacity(0.1),
-                        radius: isSelected ? 10 : 6,
-                        x: 0,
-                        y: 3
-                    )
-                
-                // Decorative background elements
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                isSelected ?
-                                    Color.white.opacity(0.15) : Color.white.opacity(0.08),
-                                Color.clear
-                            ]),
-                            center: .center,
-                            startRadius: 1,
-                            endRadius: 25
-                        )
-                    )
-                    .frame(width: 50, height: 50)
-                    .offset(x: -15, y: -15)
-                    .blur(radius: 2)
-                
-                // Icon with enhanced effects
-                Image(systemName: icon.rawValue)
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: isSelected ?
-                                [Color.white, Color.white.opacity(0.9)] :
-                                [Color.primary.opacity(0.9), Color.primary.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .shadow(
-                        color: isSelected ?
-                            Color.white.opacity(0.5) : Color.clear,
-                        radius: 4
-                    )
-                    .shadow(
-                        color: isSelected ?
-                            Color.accentColor.opacity(0.5) : Color.clear,
-                        radius: 3
-                    )
-            }
-            .frame(width: 48, height: 48)
-            
-            // Enhanced title styling
-            VStack(spacing: 2) {
-                Text(title)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(isSelected ?
-                        .primary : .secondary)
-                    .lineLimit(1)
-                    .frame(maxWidth: 70)
-                
-                // Trigger word section with consistent height
-                ZStack(alignment: .center) {
-                    if id == PredefinedPrompts.assistantPromptId, let assistantTriggerWord = assistantTriggerWord, !assistantTriggerWord.isEmpty {
-                        // Show the global assistant trigger word for the Assistant Mode
-                        HStack(spacing: 2) {
-                            Image(systemName: "mic.fill")
-                                .font(.system(size: 7))
-                                .foregroundColor(isSelected ? .accentColor.opacity(0.9) : .secondary.opacity(0.7))
-                            
-                            Text("\"\(assistantTriggerWord)...\"")
-                                .font(.system(size: 8, weight: .regular))
-                                .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
-                                .lineLimit(1)
-                        }
-                        .frame(maxWidth: 70)
-                    } else if let triggerWord = triggerWord, !triggerWord.isEmpty {
-                        // Show custom trigger words for Enhancement Modes
-                        HStack(spacing: 2) {
-                            Image(systemName: "mic.fill")
-                                .font(.system(size: 7))
-                                .foregroundColor(isSelected ? .accentColor.opacity(0.9) : .secondary.opacity(0.7))
-                            
-                            Text("\"\(triggerWord)...\"")
-                                .font(.system(size: 8, weight: .regular))
-                                .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
-                                .lineLimit(1)
-                        }
-                        .frame(maxWidth: 70)
-                    }
-                }
-                .frame(height: 16) // Fixed height for all modes, with or without trigger words
-            }
-        }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 6)
-        .contentShape(Rectangle())
-        .scaleEffect(isSelected ? 1.05 : 1.0)
-        .onTapGesture(perform: onTap)
-        .contextMenu {
-            if !isPredefined && (onEdit != nil || onDelete != nil) {
-                if let onEdit = onEdit {
-                    Button {
-                        onEdit(self)
-                    } label: {
-                        Label("Edit", systemImage: "pencil")
-                    }
-                }
-                
-                if let onDelete = onDelete {
-                    Button(role: .destructive) {
-                        onDelete(self)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
-            }
-        }
-    }
-}
-
 struct EnhancementSettingsView: View {
     @EnvironmentObject private var enhancementService: AIEnhancementService
     @State private var isEditingPrompt = false
@@ -243,29 +86,13 @@ struct EnhancementSettingsView: View {
                     
                     // 3. Enhancement Modes & Assistant Section
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Enhancement Modes & Assistant")
+                        Text("Enhancement Prompt")
                             .font(.headline)
                         
-                        // Modes Section
+                        // Prompts Section
                         VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text("Enhancement Modes")
-                                    .font(.subheadline)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                Button(action: { isEditingPrompt = true }) {
-                                    Image(systemName: "plus.circle.fill")
-                                        .symbolRenderingMode(.hierarchical)
-                                        .font(.system(size: 26, weight: .medium))
-                                        .foregroundStyle(Color.accentColor)
-                                }
-                                .buttonStyle(.plain)
-                                .contentShape(Circle())
-                                .help("Add new mode")
-                            }
-                            
                             if enhancementService.allPrompts.isEmpty {
-                                Text("No modes available")
+                                Text("No prompts available")
                                     .foregroundColor(.secondary)
                                     .font(.caption)
                             } else {
@@ -285,6 +112,12 @@ struct EnhancementSettingsView: View {
                                             assistantTriggerWord: enhancementService.assistantTriggerWord
                                         )
                                     }
+                                    
+                                    // Plus icon using the same styling as prompt icons
+                                    CustomPrompt.addNewButton {
+                                        isEditingPrompt = true
+                                    }
+                                    .help("Add new prompt")
                                 }
                                 .padding(.vertical, 12)
                                 .padding(.horizontal, 16)
@@ -296,7 +129,7 @@ struct EnhancementSettingsView: View {
                         // Assistant Mode Section
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
-                                Text("Assistant Mode")
+                                Text("Assistant Prompt")
                                     .font(.subheadline)
                                 Image(systemName: "sparkles")
                                     .foregroundColor(.accentColor)

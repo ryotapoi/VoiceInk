@@ -557,26 +557,14 @@ struct ConfigurationView: View {
                             }
                         
                             
-                            // Enhancement Modes Section (reused from EnhancementSettingsView)
+                            // Enhancement Prompts Section (reused from EnhancementSettingsView)
                             VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("Enhancement Modes")
-                                        .font(.subheadline)
-                                        .foregroundColor(.primary)
-                                    Spacer()
-                                    Button(action: { isEditingPrompt = true }) {
-                                        Image(systemName: "plus.circle.fill")
-                                            .symbolRenderingMode(.hierarchical)
-                                            .font(.system(size: 26, weight: .medium))
-                                            .foregroundStyle(Color.accentColor)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .contentShape(Circle())
-                                    .help("Add new mode")
-                                }
+                                Text("Enhancement Prompts")
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
                                 
                                 if enhancementService.allPrompts.isEmpty {
-                                    Text("No modes available")
+                                    Text("No prompts available")
                                         .foregroundColor(.secondary)
                                         .font(.caption)
                                 } else {
@@ -593,6 +581,12 @@ struct ConfigurationView: View {
                                                 onDelete: { enhancementService.deletePrompt($0) }
                                             )
                                         }
+                                        
+                                        // Plus icon using the same styling as prompt icons
+                                        CustomPrompt.addNewButton {
+                                            isEditingPrompt = true
+                                        }
+                                        .help("Add new prompt")
                                     }
                                     .padding(.vertical, 12)
                                     .padding(.horizontal, 16)

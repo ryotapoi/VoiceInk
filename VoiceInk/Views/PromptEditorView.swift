@@ -49,7 +49,7 @@ struct PromptEditorView: View {
         VStack(spacing: 0) {
             // Header with modern styling
             HStack {
-                Text(mode == .add ? "New Mode" : "Edit Mode")
+                Text(mode == .add ? "New Prompt" : "Edit Prompt")
                     .font(.title2)
                     .fontWeight(.bold)
                 Spacer()
@@ -133,7 +133,7 @@ struct PromptEditorView: View {
                             .font(.headline)
                             .foregroundColor(.secondary)
                         
-                        Text("Add a brief description of what this mode does")
+                        Text("Add a brief description of what this prompt does")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
@@ -149,7 +149,7 @@ struct PromptEditorView: View {
                             .font(.headline)
                             .foregroundColor(.secondary)
                         
-                        Text("Add a custom word to activate this mode by voice (optional)")
+                        Text("Add a custom word to activate this prompt by voice (optional)")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
@@ -161,7 +161,7 @@ struct PromptEditorView: View {
                     
                     // Prompt Text Section with improved styling
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Mode Instructions")
+                        Text("Prompt Instructions")
                             .font(.headline)
                             .foregroundColor(.secondary)
                         
