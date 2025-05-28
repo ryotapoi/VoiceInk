@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension CustomPrompt {
-    func promptIcon(isSelected: Bool, onTap: @escaping () -> Void, onEdit: ((CustomPrompt) -> Void)? = nil, onDelete: ((CustomPrompt) -> Void)? = nil) -> some View {
+    func promptIcon(isSelected: Bool, onTap: @escaping () -> Void, onEdit: ((CustomPrompt) -> Void)? = nil, onDelete: ((CustomPrompt) -> Void)? = nil, assistantTriggerWord: String? = nil) -> some View {
         VStack(spacing: 8) {
             ZStack {
                 // Dynamic background with blur effect
@@ -89,12 +89,46 @@ extension CustomPrompt {
             .frame(width: 48, height: 48)
             
             // Enhanced title styling
-            Text(title)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(isSelected ?
-                    .primary : .secondary)
-                .lineLimit(1)
-                .frame(maxWidth: 70)
+            VStack(spacing: 2) {
+                Text(title)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(isSelected ?
+                        .primary : .secondary)
+                    .lineLimit(1)
+                    .frame(maxWidth: 70)
+                
+                // Trigger word section with consistent height
+                ZStack(alignment: .center) {
+                    if id == PredefinedPrompts.assistantPromptId, let assistantTriggerWord = assistantTriggerWord, !assistantTriggerWord.isEmpty {
+                        // Show the global assistant trigger word for the Assistant Mode
+                        HStack(spacing: 2) {
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 7))
+                                .foregroundColor(isSelected ? .accentColor.opacity(0.9) : .secondary.opacity(0.7))
+                            
+                            Text("\"\(assistantTriggerWord)...\"")
+                                .font(.system(size: 8, weight: .regular))
+                                .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: 70)
+                    } else if let triggerWord = triggerWord, !triggerWord.isEmpty {
+                        // Show custom trigger words for Enhancement Modes
+                        HStack(spacing: 2) {
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 7))
+                                .foregroundColor(isSelected ? .accentColor.opacity(0.9) : .secondary.opacity(0.7))
+                            
+                            Text("\"\(triggerWord)...\"")
+                                .font(.system(size: 8, weight: .regular))
+                                .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: 70)
+                    }
+                }
+                .frame(height: 16) // Fixed height for all modes, with or without trigger words
+            }
         }
         .padding(.horizontal, 4)
         .padding(.vertical, 6)
@@ -247,7 +281,8 @@ struct EnhancementSettingsView: View {
                                                 enhancementService.setActivePrompt(prompt)
                                             }},
                                             onEdit: { selectedPromptForEdit = $0 },
-                                            onDelete: { enhancementService.deletePrompt($0) }
+                                            onDelete: { enhancementService.deletePrompt($0) },
+                                            assistantTriggerWord: enhancementService.assistantTriggerWord
                                         )
                                     }
                                 }

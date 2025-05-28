@@ -82,6 +82,7 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
     let icon: PromptIcon
     let description: String?
     let isPredefined: Bool
+    let triggerWord: String?
     
     init(
         id: UUID = UUID(),
@@ -90,7 +91,8 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
         isActive: Bool = false,
         icon: PromptIcon = .documentFill,
         description: String? = nil,
-        isPredefined: Bool = false
+        isPredefined: Bool = false,
+        triggerWord: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -99,5 +101,6 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
         self.icon = icon
         self.description = description
         self.isPredefined = isPredefined
+        self.triggerWord = triggerWord
     }
 } 

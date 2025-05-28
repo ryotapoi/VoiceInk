@@ -79,6 +79,9 @@ class AIEnhancementService: ObservableObject {
     private var lastRequestTime: Date?
     private let modelContext: ModelContext
     
+    // Store the original prompt ID when temporarily switching due to trigger word
+    private var originalSelectedPromptId: UUID?
+    
     init(aiService: AIService = AIService(), modelContext: ModelContext) {
         self.aiService = aiService
         self.modelContext = modelContext
@@ -144,7 +147,39 @@ class AIEnhancementService: ObservableObject {
     }
     
     private func determineMode(text: String) -> EnhancementMode {
-        text.lowercased().hasPrefix(assistantTriggerWord.lowercased()) ? .aiAssistant : .transcriptionEnhancement
+        let lowerText = text.lowercased()
+        
+        // First check if the text starts with the global assistant trigger word
+        if lowerText.hasPrefix(assistantTriggerWord.lowercased()) {
+            logger.notice("🔍 Detected assistant trigger word: \(self.assistantTriggerWord)")
+            return .aiAssistant
+        }
+        
+        // Then check for custom trigger words in all prompts
+        for prompt in allPrompts {
+            if let triggerWord = prompt.triggerWord?.lowercased().trimmingCharacters(in: .whitespacesAndNewlines),
+               !triggerWord.isEmpty,
+               lowerText.hasPrefix(triggerWord) {
+                
+                logger.notice("🔍 Detected custom trigger word: '\(triggerWord)' for mode: \(prompt.title)")
+                
+                // Only store the original prompt ID if we haven't already
+                if originalSelectedPromptId == nil {
+                    originalSelectedPromptId = selectedPromptId
+                    logger.notice("💾 Stored original prompt ID: \(String(describing: self.originalSelectedPromptId))")
+                }
+                
+                // Update to the new prompt
+                selectedPromptId = prompt.id
+                logger.notice("🔄 Switched to prompt: \(prompt.title) (ID: \(prompt.id))")
+                
+                return .transcriptionEnhancement
+            }
+        }
+        
+        // Default to transcription enhancement with currently selected prompt
+        logger.notice("ℹ️ No trigger word detected, using default enhancement mode")
+        return .transcriptionEnhancement
     }
     
     private func getSystemMessage(for mode: EnhancementMode) -> String {
@@ -186,7 +221,7 @@ class AIEnhancementService: ObservableObject {
         }
     }
     
-    private func makeRequest(text: String, retryCount: Int = 0) async throws -> String {
+    private func makeRequest(text: String, mode: EnhancementMode, retryCount: Int = 0) async throws -> String {
         guard isConfigured else {
             logger.error("AI Enhancement: API not configured")
             throw EnhancementError.notConfigured
@@ -198,7 +233,6 @@ class AIEnhancementService: ObservableObject {
         }
         
         let formattedText = "\n<TRANSCRIPT>\n\(text)\n</TRANSCRIPT>"
-        let mode = determineMode(text: text)
         let systemMessage = getSystemMessage(for: mode)
         
         logger.notice("🛰️ Sending to AI provider: \(self.aiService.selectedProvider.rawValue, privacy: .public)\nSystem Message: \(systemMessage, privacy: .public)\nUser Message: \(formattedText, privacy: .public)")
@@ -292,7 +326,7 @@ class AIEnhancementService: ObservableObject {
             } catch {
                 if retryCount < maxRetries {
                     try await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(retryCount)) * 1_000_000_000))
-                    return try await makeRequest(text: text, retryCount: retryCount + 1)
+                    return try await makeRequest(text: text, mode: mode, retryCount: retryCount + 1)
                 }
                 throw EnhancementError.networkError
             }
@@ -347,7 +381,7 @@ class AIEnhancementService: ObservableObject {
             } catch {
                 if retryCount < maxRetries {
                     try await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(retryCount)) * 1_000_000_000))
-                    return try await makeRequest(text: text, retryCount: retryCount + 1)
+                    return try await makeRequest(text: text, mode: mode, retryCount: retryCount + 1)
                 }
                 throw EnhancementError.networkError
             }
@@ -410,7 +444,7 @@ class AIEnhancementService: ObservableObject {
             } catch {
                 if retryCount < maxRetries {
                     try await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(retryCount)) * 1_000_000_000))
-                    return try await makeRequest(text: text, retryCount: retryCount + 1)
+                    return try await makeRequest(text: text, mode: mode, retryCount: retryCount + 1)
                 }
                 throw EnhancementError.networkError
             }
@@ -419,11 +453,41 @@ class AIEnhancementService: ObservableObject {
     
     func enhance(_ text: String) async throws -> String {
         logger.notice("🚀 Starting AI enhancement for text (\(text.count) characters)")
+        
+        // Determine the mode and potentially set the active prompt based on trigger word
+        let mode = determineMode(text: text)
+        
+        // If a custom trigger word was detected, remove it from the text
+        var processedText = text
+        if mode == .transcriptionEnhancement, let activePrompt = activePrompt, let triggerWord = activePrompt.triggerWord, !triggerWord.isEmpty {
+            // Check if the text starts with the trigger word (case insensitive)
+            if text.lowercased().hasPrefix(triggerWord.lowercased()) {
+                // Remove the trigger word from the beginning of the text
+                let index = text.index(text.startIndex, offsetBy: triggerWord.count)
+                processedText = String(text[index...]).trimmingCharacters(in: .whitespacesAndNewlines)
+                logger.notice("🔍 Detected trigger word '\(triggerWord)' for mode '\(activePrompt.title)'. Processing: \(processedText)")
+            }
+        } else if mode == .aiAssistant {
+            // Remove the assistant trigger word if present
+            if text.lowercased().hasPrefix(assistantTriggerWord.lowercased()) {
+                let index = text.index(text.startIndex, offsetBy: assistantTriggerWord.count)
+                processedText = String(text[index...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        
+        // Process the text with the appropriate mode
         var retryCount = 0
         while retryCount < maxRetries {
             do {
-                let result = try await makeRequest(text: text, retryCount: retryCount)
+                let result = try await makeRequest(text: processedText, mode: mode, retryCount: retryCount)
                 logger.notice("✅ AI enhancement completed successfully (\(result.count) characters)")
+                
+                // After successful enhancement, restore the original prompt if we temporarily switched
+                // due to a trigger word
+                Task { @MainActor in
+                    self.restoreOriginalPrompt()
+                }
+                
                 return result
             } catch EnhancementError.rateLimitExceeded where retryCount < maxRetries - 1 {
                 logger.notice("⚠️ Rate limit exceeded, retrying AI enhancement (attempt \(retryCount + 1) of \(self.maxRetries))")
@@ -432,10 +496,22 @@ class AIEnhancementService: ObservableObject {
                 continue
             } catch {
                 logger.notice("❌ AI enhancement failed: \(error.localizedDescription)")
+                
+                // Even if enhancement fails, we should restore the original prompt
+                Task { @MainActor in
+                    self.restoreOriginalPrompt()
+                }
+                
                 throw error
             }
         }
         logger.notice("❌ AI enhancement failed: maximum retries exceeded")
+        
+        // If we exceed max retries, also restore the original prompt
+        Task { @MainActor in
+            self.restoreOriginalPrompt()
+        }
+        
         throw EnhancementError.maxRetriesExceeded
     }
     
@@ -449,8 +525,8 @@ class AIEnhancementService: ObservableObject {
         }
     }
     
-    func addPrompt(title: String, promptText: String, icon: PromptIcon = .documentFill, description: String? = nil) {
-        let newPrompt = CustomPrompt(title: title, promptText: promptText, icon: icon, description: description, isPredefined: false)
+    func addPrompt(title: String, promptText: String, icon: PromptIcon = .documentFill, description: String? = nil, triggerWord: String? = nil) {
+        let newPrompt = CustomPrompt(title: title, promptText: promptText, icon: icon, description: description, isPredefined: false, triggerWord: triggerWord)
         customPrompts.append(newPrompt)
         if customPrompts.count == 1 {
             selectedPromptId = newPrompt.id
@@ -476,6 +552,15 @@ class AIEnhancementService: ObservableObject {
     
     func setActivePrompt(_ prompt: CustomPrompt) {
         selectedPromptId = prompt.id
+    }
+    
+    /// Restores the original prompt ID if it was temporarily changed due to a trigger word
+    func restoreOriginalPrompt() {
+        if let originalId = originalSelectedPromptId {
+            selectedPromptId = originalId
+            originalSelectedPromptId = nil
+            logger.notice("🔄 Restored original enhancement mode after trigger word activation")
+        }
     }
 }
 

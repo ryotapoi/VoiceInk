@@ -24,6 +24,7 @@ struct PromptEditorView: View {
     @State private var promptText: String
     @State private var selectedIcon: PromptIcon
     @State private var description: String
+    @State private var triggerWord: String
     @State private var showingPredefinedPrompts = false
     
     init(mode: Mode) {
@@ -34,11 +35,13 @@ struct PromptEditorView: View {
             _promptText = State(initialValue: "")
             _selectedIcon = State(initialValue: .documentFill)
             _description = State(initialValue: "")
+            _triggerWord = State(initialValue: "")
         case .edit(let prompt):
             _title = State(initialValue: prompt.title)
             _promptText = State(initialValue: prompt.promptText)
             _selectedIcon = State(initialValue: prompt.icon)
             _description = State(initialValue: prompt.description ?? "")
+            _triggerWord = State(initialValue: prompt.triggerWord ?? "")
         }
     }
     
@@ -140,6 +143,22 @@ struct PromptEditorView: View {
                     }
                     .padding(.horizontal)
                     
+                    // Trigger Word Field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Trigger Word")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        Text("Add a custom word to activate this mode by voice (optional)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        TextField("Enter a trigger word", text: $triggerWord)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.body)
+                    }
+                    .padding(.horizontal)
+                    
                     // Prompt Text Section with improved styling
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Mode Instructions")
@@ -211,7 +230,8 @@ struct PromptEditorView: View {
                 title: title,
                 promptText: promptText,
                 icon: selectedIcon,
-                description: description.isEmpty ? nil : description
+                description: description.isEmpty ? nil : description,
+                triggerWord: triggerWord.isEmpty ? nil : triggerWord
             )
         case .edit(let prompt):
             let updatedPrompt = CustomPrompt(
@@ -220,7 +240,8 @@ struct PromptEditorView: View {
                 promptText: promptText,
                 isActive: prompt.isActive,
                 icon: selectedIcon,
-                description: description.isEmpty ? nil : description
+                description: description.isEmpty ? nil : description,
+                triggerWord: triggerWord.isEmpty ? nil : triggerWord
             )
             enhancementService.updatePrompt(updatedPrompt)
         }
