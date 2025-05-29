@@ -72,6 +72,13 @@ class ActiveWindowService: ObservableObject {
     func applyConfiguration(_ config: PowerModeConfig) async {
         guard let enhancementService = enhancementService else { return }
         
+        // Capture current state before making changes
+        let wasScreenCaptureEnabled = await MainActor.run { 
+            enhancementService.useScreenCaptureContext 
+        }
+        let wasEnhancementEnabled = await MainActor.run { 
+            enhancementService.isEnhancementEnabled 
+        }
 
         await MainActor.run {
             enhancementService.isEnhancementEnabled = config.isAIEnhancementEnabled
@@ -124,6 +131,18 @@ class ActiveWindowService: ObservableObject {
                         
                     }
                 }
+            }
+        }
+        
+        // Capture screen context at the end after a brief delay to ensure all changes are settled
+        // and either enhancement is newly enabled or screen capture is newly enabled
+        if config.isAIEnhancementEnabled && config.useScreenCapture {
+            let shouldCaptureScreen = !wasEnhancementEnabled || !wasScreenCaptureEnabled
+            
+            if shouldCaptureScreen {
+                // Wait a moment for UI changes and content loading to complete
+                try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+                await enhancementService.captureScreenContext()
             }
         }
     }

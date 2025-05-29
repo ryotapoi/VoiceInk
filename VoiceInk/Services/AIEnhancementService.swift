@@ -20,12 +20,6 @@ class AIEnhancementService: ObservableObject {
             if isEnhancementEnabled && selectedPromptId == nil {
                 selectedPromptId = customPrompts.first?.id
             }
-            
-            if isEnhancementEnabled && useScreenCaptureContext {
-                Task {
-                    await captureScreenContext()
-                }
-            }
         }
     }        
     @Published var useClipboardContext: Bool {
