@@ -48,6 +48,9 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     var recordedFile: URL? = nil
     let whisperPrompt = WhisperPrompt()
     
+    // Prompt detection service for trigger word handling
+    private let promptDetectionService = PromptDetectionService()
+    
     let modelContext: ModelContext
     
     private var modelUrl: URL? {
@@ -295,24 +298,36 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 text = WordReplacementService.shared.applyReplacements(to: text)
                 logger.notice("✅ Word replacements applied")
             }
+            
+            var promptDetectionResult: PromptDetectionService.PromptDetectionResult? = nil
+            let originalText = text 
+            
+            if let enhancementService = enhancementService, enhancementService.isConfigured {
+                let detectionResult = promptDetectionService.analyzeText(text, with: enhancementService)
+                promptDetectionResult = detectionResult
+                await promptDetectionService.applyDetectionResult(detectionResult, to: enhancementService)
+            }
+            
             if let enhancementService = enhancementService,
                enhancementService.isEnhancementEnabled,
                enhancementService.isConfigured {
                 do {
                     if shouldCancelRecording { return }
-                    let enhancedText = try await enhancementService.enhance(text)
+                    // Use processed text (without trigger words) for AI enhancement
+                    let textForAI = promptDetectionResult?.processedText ?? text
+                    let enhancedText = try await enhancementService.enhance(textForAI)
                     let newTranscription = Transcription(
-                        text: text,
+                        text: originalText, 
                         duration: actualDuration,
                         enhancedText: enhancedText,
                         audioFileURL: permanentURLString
                     )
                     modelContext.insert(newTranscription)
                     try? modelContext.save()
-                    text = enhancedText
+                    text = enhancedText 
                 } catch {
                     let newTranscription = Transcription(
-                        text: text,
+                        text: originalText,
                         duration: actualDuration,
                         audioFileURL: permanentURLString
                     )
@@ -321,7 +336,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 }
             } else {
                 let newTranscription = Transcription(
-                    text: text,
+                    text: originalText,
                     duration: actualDuration,
                     audioFileURL: permanentURLString
                 )
@@ -353,6 +368,13 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 }
             }
             try? FileManager.default.removeItem(at: url)
+            
+            if let result = promptDetectionResult, 
+               let enhancementService = enhancementService, 
+               result.shouldEnableAI {
+                await promptDetectionService.restoreOriginalSettings(result, to: enhancementService)
+            }
+            
             await dismissMiniRecorder()
             await cleanupModelResources()
             

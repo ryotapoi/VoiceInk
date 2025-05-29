@@ -74,4 +74,3 @@ class CursorPaster {
         cmdUp?.post(tap: .cghidEventTap)
     }
 }
-
