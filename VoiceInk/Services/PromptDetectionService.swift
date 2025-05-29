@@ -21,18 +21,17 @@ class PromptDetectionService {
         let originalPromptId = enhancementService.selectedPromptId
         
         for prompt in enhancementService.allPrompts {
-            if let triggerWord = prompt.triggerWord?.trimmingCharacters(in: .whitespacesAndNewlines),
-               !triggerWord.isEmpty,
-               let result = removeTriggerWord(from: text, triggerWord: triggerWord) {
-                
-                return PromptDetectionResult(
-                    shouldEnableAI: true,
-                    selectedPromptId: prompt.id,
-                    processedText: result,
-                    detectedTriggerWord: triggerWord,
-                    originalEnhancementState: originalEnhancementState,
-                    originalPromptId: originalPromptId
-                )
+            if !prompt.triggerWords.isEmpty {
+                if let (detectedWord, processedText) = findMatchingTriggerWord(from: text, triggerWords: prompt.triggerWords) {
+                    return PromptDetectionResult(
+                        shouldEnableAI: true,
+                        selectedPromptId: prompt.id,
+                        processedText: processedText,
+                        detectedTriggerWord: detectedWord,
+                        originalEnhancementState: originalEnhancementState,
+                        originalPromptId: originalPromptId
+                    )
+                }
             }
         }
         
@@ -104,5 +103,20 @@ class PromptDetectionService {
         }
         
         return remainingText
+    }
+    
+    private func findMatchingTriggerWord(from text: String, triggerWords: [String]) -> (String, String)? {
+        let trimmedWords = triggerWords.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        
+        // Sort by length (longest first) to match the most specific trigger word
+        let sortedTriggerWords = trimmedWords.sorted { $0.count > $1.count }
+        
+        for triggerWord in sortedTriggerWords {
+            if let processedText = removeTriggerWord(from: text, triggerWord: triggerWord) {
+                return (triggerWord, processedText)
+            }
+        }
+        return nil
     }
 }

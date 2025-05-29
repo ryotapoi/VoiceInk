@@ -83,7 +83,7 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
     let icon: PromptIcon
     let description: String?
     let isPredefined: Bool
-    let triggerWord: String?
+    let triggerWords: [String]
     
     init(
         id: UUID = UUID(),
@@ -93,7 +93,7 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
         icon: PromptIcon = .documentFill,
         description: String? = nil,
         isPredefined: Bool = false,
-        triggerWord: String? = nil
+        triggerWords: [String] = []
     ) {
         self.id = id
         self.title = title
@@ -102,7 +102,7 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
         self.icon = icon
         self.description = description
         self.isPredefined = isPredefined
-        self.triggerWord = triggerWord
+        self.triggerWords = triggerWords
     }
 }
 
@@ -206,16 +206,23 @@ extension CustomPrompt {
                 
                 // Trigger word section with consistent height
                 ZStack(alignment: .center) {
-                    if let triggerWord = triggerWord, !triggerWord.isEmpty {
+                    if !triggerWords.isEmpty {
                         HStack(spacing: 2) {
                             Image(systemName: "mic.fill")
                                 .font(.system(size: 7))
                                 .foregroundColor(isSelected ? .accentColor.opacity(0.9) : .secondary.opacity(0.7))
                             
-                            Text("\"\(triggerWord)...\"")
-                                .font(.system(size: 8, weight: .regular))
-                                .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
-                                .lineLimit(1)
+                            if triggerWords.count == 1 {
+                                Text("\"\(triggerWords[0])...\"")
+                                    .font(.system(size: 8, weight: .regular))
+                                    .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
+                                    .lineLimit(1)
+                            } else {
+                                Text("\"\(triggerWords[0])...\" +\(triggerWords.count - 1)")
+                                    .font(.system(size: 8, weight: .regular))
+                                    .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
+                                    .lineLimit(1)
+                            }
                         }
                         .frame(maxWidth: 70)
                     }

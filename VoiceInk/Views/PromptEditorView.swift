@@ -24,7 +24,7 @@ struct PromptEditorView: View {
     @State private var promptText: String
     @State private var selectedIcon: PromptIcon
     @State private var description: String
-    @State private var triggerWord: String
+    @State private var triggerWords: [String]
     @State private var showingPredefinedPrompts = false
     
     private var isEditingPredefinedPrompt: Bool {
@@ -42,13 +42,13 @@ struct PromptEditorView: View {
             _promptText = State(initialValue: "")
             _selectedIcon = State(initialValue: .documentFill)
             _description = State(initialValue: "")
-            _triggerWord = State(initialValue: "")
+            _triggerWords = State(initialValue: [])
         case .edit(let prompt):
             _title = State(initialValue: prompt.title)
             _promptText = State(initialValue: prompt.promptText)
             _selectedIcon = State(initialValue: prompt.icon)
             _description = State(initialValue: prompt.description ?? "")
-            _triggerWord = State(initialValue: prompt.triggerWord ?? "")
+            _triggerWords = State(initialValue: prompt.triggerWords)
         }
     }
     
@@ -56,7 +56,7 @@ struct PromptEditorView: View {
         VStack(spacing: 0) {
             // Header with modern styling
             HStack {
-                Text(isEditingPredefinedPrompt ? "Edit Trigger Word" : (mode == .add ? "New Prompt" : "Edit Prompt"))
+                Text(isEditingPredefinedPrompt ? "Edit Trigger Words" : (mode == .add ? "New Prompt" : "Edit Prompt"))
                     .font(.title2)
                     .fontWeight(.bold)
                 Spacer()
@@ -97,22 +97,14 @@ struct PromptEditorView: View {
                                 .padding(.horizontal)
                                 .padding(.top, 8)
                             
-                            Text("You can only customize the trigger word for system prompts.")
+                            Text("You can only customize the trigger words for system prompts.")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal)
                             
-                            // Trigger Word Field with same styling as custom prompts
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Trigger Word")
-                                    .font(.headline)
-                                    .foregroundColor(.secondary)
-                                
-                                TextField("Enter a trigger word (optional)", text: $triggerWord)
-                                    .textFieldStyle(.roundedBorder)
-                                    .font(.body)
-                            }
-                            .padding(.horizontal)
+                            // Trigger Words Field using reusable component
+                            TriggerWordsEditor(triggerWords: $triggerWords)
+                                .padding(.horizontal)
                         }
                         .padding(.vertical, 20)
                         
@@ -206,21 +198,9 @@ struct PromptEditorView: View {
                         }
                         .padding(.horizontal)
                         
-                        // Trigger Word Field
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Trigger Word")
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-                            
-                            Text("Optional word to quickly activate this prompt")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            TextField("Enter a trigger word (optional)", text: $triggerWord)
-                                .textFieldStyle(.roundedBorder)
-                                .font(.body)
-                        }
-                        .padding(.horizontal)
+                        // Trigger Words Field using reusable component
+                        TriggerWordsEditor(triggerWords: $triggerWords)
+                            .padding(.horizontal)
                         
                         if case .add = mode {
                             // Templates Section with modern styling
@@ -270,7 +250,7 @@ struct PromptEditorView: View {
                 promptText: promptText,
                 icon: selectedIcon,
                 description: description.isEmpty ? nil : description,
-                triggerWord: triggerWord.isEmpty ? nil : triggerWord
+                triggerWords: triggerWords
             )
         case .edit(let prompt):
             let updatedPrompt = CustomPrompt(
@@ -281,7 +261,7 @@ struct PromptEditorView: View {
                 icon: prompt.isPredefined ? prompt.icon : selectedIcon,
                 description: prompt.isPredefined ? prompt.description : (description.isEmpty ? nil : description),
                 isPredefined: prompt.isPredefined,
-                triggerWord: triggerWord.isEmpty ? nil : triggerWord
+                triggerWords: triggerWords
             )
             enhancementService.updatePrompt(updatedPrompt)
         }
@@ -372,6 +352,62 @@ struct TemplateButton: View {
     }
 }
 
+// Reusable Trigger Words Editor Component
+struct TriggerWordsEditor: View {
+    @Binding var triggerWords: [String]
+    @State private var newTriggerWord: String = ""
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Trigger Words")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            Text("Add multiple words that can activate this prompt")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            // Display existing trigger words as tags
+            if !triggerWords.isEmpty {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 140, maximum: 220))], spacing: 8) {
+                    ForEach(triggerWords, id: \.self) { word in
+                        TriggerWordItemView(word: word) {
+                            triggerWords.removeAll { $0 == word }
+                        }
+                    }
+                }
+            }
+            
+            // Input for new trigger word
+            HStack {
+                TextField("Add trigger word", text: $newTriggerWord)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.body)
+                    .onSubmit {
+                        addTriggerWord()
+                    }
+                
+                Button("Add") {
+                    addTriggerWord()
+                }
+                .disabled(newTriggerWord.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+    }
+    
+    private func addTriggerWord() {
+        let trimmedWord = newTriggerWord.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedWord.isEmpty else { return }
+        
+        // Check for duplicates (case insensitive)
+        let lowerCaseWord = trimmedWord.lowercased()
+        guard !triggerWords.contains(where: { $0.lowercased() == lowerCaseWord }) else { return }
+        
+        triggerWords.append(trimmedWord)
+        newTriggerWord = ""
+    }
+}
+
 // Icon menu content for better organization
 struct IconMenuContent: View {
     @Binding var selectedIcon: PromptIcon
@@ -407,6 +443,47 @@ struct IconMenuSection: View {
             if title != "Media & Creative" {
                 Divider()
             }
+        }
+    }
+}
+
+struct TriggerWordItemView: View {
+    let word: String
+    let onDelete: () -> Void
+    @State private var isHovered = false
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(word)
+                .font(.system(size: 13))
+                .lineLimit(1)
+                .foregroundColor(.primary)
+            
+            Spacer(minLength: 8)
+            
+            Button(action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(isHovered ? .red : .secondary)
+                    .contentTransition(.symbolEffect(.replace))
+            }
+            .buttonStyle(.borderless)
+            .help("Remove word")
+            .onHover { hover in
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isHovered = hover
+                }
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background {
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(.windowBackgroundColor).opacity(0.4))
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
         }
     }
 } 

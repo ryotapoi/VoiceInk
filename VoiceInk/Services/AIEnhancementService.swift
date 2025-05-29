@@ -82,12 +82,8 @@ class AIEnhancementService: ObservableObject {
         self.useClipboardContext = UserDefaults.standard.bool(forKey: "useClipboardContext")
         self.useScreenCaptureContext = UserDefaults.standard.bool(forKey: "useScreenCaptureContext")
         
-        if let savedPromptsData = UserDefaults.standard.data(forKey: "customPrompts"),
-           let decodedPrompts = try? JSONDecoder().decode([CustomPrompt].self, from: savedPromptsData) {
-            self.customPrompts = decodedPrompts
-        } else {
-            self.customPrompts = []
-        }
+        // Use migration service to load prompts, preserving existing data
+        self.customPrompts = PromptMigrationService.migratePromptsIfNeeded()
         
         if let savedPromptId = UserDefaults.standard.string(forKey: "selectedPromptId") {
             self.selectedPromptId = UUID(uuidString: savedPromptId)
@@ -455,8 +451,8 @@ class AIEnhancementService: ObservableObject {
         }
     }
     
-    func addPrompt(title: String, promptText: String, icon: PromptIcon = .documentFill, description: String? = nil, triggerWord: String? = nil) {
-        let newPrompt = CustomPrompt(title: title, promptText: promptText, icon: icon, description: description, isPredefined: false, triggerWord: triggerWord)
+    func addPrompt(title: String, promptText: String, icon: PromptIcon = .documentFill, description: String? = nil, triggerWords: [String] = []) {
+        let newPrompt = CustomPrompt(title: title, promptText: promptText, icon: icon, description: description, isPredefined: false, triggerWords: triggerWords)
         customPrompts.append(newPrompt)
         if customPrompts.count == 1 {
             selectedPromptId = newPrompt.id
@@ -510,7 +506,7 @@ class AIEnhancementService: ObservableObject {
                     icon: template.icon,
                     description: template.description,
                     isPredefined: true,
-                    triggerWord: updatedPrompt.triggerWord // Preserve user's trigger word
+                    triggerWords: updatedPrompt.triggerWords // Preserve user's trigger words
                 )
                 customPrompts[existingIndex] = updatedPrompt
             } else {
