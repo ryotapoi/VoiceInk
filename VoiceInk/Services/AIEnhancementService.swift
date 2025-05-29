@@ -42,15 +42,9 @@ class AIEnhancementService: ObservableObject {
         }
     }
     
-    @Published var assistantTriggerWord: String {
-        didSet {
-            UserDefaults.standard.set(assistantTriggerWord, forKey: "assistantTriggerWord")
-        }
-    }
-    
     @Published var customPrompts: [CustomPrompt] {
         didSet {
-            if let encoded = try? JSONEncoder().encode(customPrompts.filter { !$0.isPredefined }) {
+            if let encoded = try? JSONEncoder().encode(customPrompts) {
                 UserDefaults.standard.set(encoded, forKey: "customPrompts")
             }
         }
@@ -67,7 +61,7 @@ class AIEnhancementService: ObservableObject {
     }
     
     var allPrompts: [CustomPrompt] {
-        PredefinedPrompts.createDefaultPrompts() + customPrompts.filter { !$0.isPredefined }
+        return customPrompts
     }
     
     private let aiService: AIService
@@ -87,7 +81,6 @@ class AIEnhancementService: ObservableObject {
         self.isEnhancementEnabled = UserDefaults.standard.bool(forKey: "isAIEnhancementEnabled")
         self.useClipboardContext = UserDefaults.standard.bool(forKey: "useClipboardContext")
         self.useScreenCaptureContext = UserDefaults.standard.bool(forKey: "useScreenCaptureContext")
-        self.assistantTriggerWord = UserDefaults.standard.string(forKey: "assistantTriggerWord") ?? "hey"
         
         if let savedPromptsData = UserDefaults.standard.data(forKey: "customPrompts"),
            let decodedPrompts = try? JSONDecoder().decode([CustomPrompt].self, from: savedPromptsData) {
@@ -110,6 +103,8 @@ class AIEnhancementService: ObservableObject {
             name: .aiProviderKeyChanged,
             object: nil
         )
+        
+        initializePredefinedPrompts()
     }
     
     deinit {
@@ -166,20 +161,17 @@ class AIEnhancementService: ObservableObject {
             ""
         }
         
-        switch mode {
-        case .transcriptionEnhancement:
-            if let activePrompt = activePrompt,
-               activePrompt.id == PredefinedPrompts.assistantPromptId {
-                return AIPrompts.assistantMode + contextSection
-            }
-            
-            var systemMessage = String(format: AIPrompts.customPromptTemplate, activePrompt!.promptText)
-            systemMessage += contextSection
-            return systemMessage
-
-        case .aiAssistant:
+        guard let activePrompt = activePrompt else {
             return AIPrompts.assistantMode + contextSection
         }
+        
+        if activePrompt.id == PredefinedPrompts.assistantPromptId {
+            return activePrompt.promptText + contextSection
+        }
+        
+        var systemMessage = String(format: AIPrompts.customPromptTemplate, activePrompt.promptText)
+        systemMessage += contextSection
+        return systemMessage
     }
     
     private func makeRequest(text: String, mode: EnhancementPrompt, retryCount: Int = 0) async throws -> String {
@@ -418,12 +410,7 @@ class AIEnhancementService: ObservableObject {
     func enhance(_ text: String) async throws -> String {
         logger.notice("🚀 Starting AI enhancement for text (\(text.count) characters)")
         
-        let enhancementPrompt: EnhancementPrompt = {
-            if let activePrompt = activePrompt, activePrompt.id == PredefinedPrompts.assistantPromptId {
-                return .aiAssistant
-            }
-            return .transcriptionEnhancement
-        }()
+        let enhancementPrompt: EnhancementPrompt = .transcriptionEnhancement
         
         var retryCount = 0
         while retryCount < maxRetries {
@@ -477,16 +464,12 @@ class AIEnhancementService: ObservableObject {
     }
     
     func updatePrompt(_ prompt: CustomPrompt) {
-        if prompt.isPredefined { return }
-        
         if let index = customPrompts.firstIndex(where: { $0.id == prompt.id }) {
             customPrompts[index] = prompt
         }
     }
     
     func deletePrompt(_ prompt: CustomPrompt) {
-        if prompt.isPredefined { return }
-        
         customPrompts.removeAll { $0.id == prompt.id }
         if selectedPromptId == prompt.id {
             selectedPromptId = allPrompts.first?.id
@@ -510,6 +493,31 @@ class AIEnhancementService: ObservableObject {
     
     private func getRetryDelay(for retryCount: Int) -> TimeInterval {
         return retryCount == 1 ? 1.0 : 2.0
+    }
+    
+    private func initializePredefinedPrompts() {
+        let predefinedTemplates = PredefinedPrompts.createDefaultPrompts()
+        
+        for template in predefinedTemplates {
+            if let existingIndex = customPrompts.firstIndex(where: { $0.id == template.id }) {
+                // Update existing predefined prompt: only update prompt text, preserve trigger word
+                var updatedPrompt = customPrompts[existingIndex]
+                updatedPrompt = CustomPrompt(
+                    id: updatedPrompt.id,
+                    title: template.title,
+                    promptText: template.promptText, // Update from template
+                    isActive: updatedPrompt.isActive,
+                    icon: template.icon,
+                    description: template.description,
+                    isPredefined: true,
+                    triggerWord: updatedPrompt.triggerWord // Preserve user's trigger word
+                )
+                customPrompts[existingIndex] = updatedPrompt
+            } else {
+                // Add new predefined prompt (no default trigger word)
+                customPrompts.append(template)
+            }
+        }
     }
 }
 

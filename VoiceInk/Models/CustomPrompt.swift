@@ -108,7 +108,7 @@ struct CustomPrompt: Identifiable, Codable, Equatable {
 
 // MARK: - UI Extensions
 extension CustomPrompt {
-    func promptIcon(isSelected: Bool, onTap: @escaping () -> Void, onEdit: ((CustomPrompt) -> Void)? = nil, onDelete: ((CustomPrompt) -> Void)? = nil, assistantTriggerWord: String? = nil) -> some View {
+    func promptIcon(isSelected: Bool, onTap: @escaping () -> Void, onEdit: ((CustomPrompt) -> Void)? = nil, onDelete: ((CustomPrompt) -> Void)? = nil) -> some View {
         VStack(spacing: 8) {
             ZStack {
                 // Dynamic background with blur effect
@@ -206,21 +206,7 @@ extension CustomPrompt {
                 
                 // Trigger word section with consistent height
                 ZStack(alignment: .center) {
-                    if id == PredefinedPrompts.assistantPromptId, let assistantTriggerWord = assistantTriggerWord, !assistantTriggerWord.isEmpty {
-                        // Show the global assistant trigger word for the Assistant Mode
-                        HStack(spacing: 2) {
-                            Image(systemName: "mic.fill")
-                                .font(.system(size: 7))
-                                .foregroundColor(isSelected ? .accentColor.opacity(0.9) : .secondary.opacity(0.7))
-                            
-                            Text("\"\(assistantTriggerWord)...\"")
-                                .font(.system(size: 8, weight: .regular))
-                                .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.7))
-                                .lineLimit(1)
-                        }
-                        .frame(maxWidth: 70)
-                    } else if let triggerWord = triggerWord, !triggerWord.isEmpty {
-                        // Show custom trigger words for Enhancement Modes
+                    if let triggerWord = triggerWord, !triggerWord.isEmpty {
                         HStack(spacing: 2) {
                             Image(systemName: "mic.fill")
                                 .font(.system(size: 7))
@@ -234,7 +220,7 @@ extension CustomPrompt {
                         .frame(maxWidth: 70)
                     }
                 }
-                .frame(height: 16) // Fixed height for all modes, with or without trigger words
+                .frame(height: 16)
             }
         }
         .padding(.horizontal, 4)
@@ -243,7 +229,7 @@ extension CustomPrompt {
         .scaleEffect(isSelected ? 1.05 : 1.0)
         .onTapGesture(perform: onTap)
         .contextMenu {
-            if !isPredefined && (onEdit != nil || onDelete != nil) {
+            if onEdit != nil || onDelete != nil {
                 if let onEdit = onEdit {
                     Button {
                         onEdit(self)
@@ -252,7 +238,7 @@ extension CustomPrompt {
                     }
                 }
                 
-                if let onDelete = onDelete {
+                if let onDelete = onDelete, !isPredefined {
                     Button(role: .destructive) {
                         onDelete(self)
                     } label: {

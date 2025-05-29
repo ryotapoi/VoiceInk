@@ -5,8 +5,6 @@ struct EnhancementSettingsView: View {
     @State private var isEditingPrompt = false
     @State private var isSettingsExpanded = true
     @State private var selectedPromptForEdit: CustomPrompt?
-    @State private var isEditingTriggerWord = false
-    @State private var tempTriggerWord = ""
     
     var body: some View {
         ScrollView {
@@ -92,87 +90,21 @@ struct EnhancementSettingsView: View {
                         // Prompts Section
                         VStack(alignment: .leading, spacing: 12) {
                             PromptSelectionGrid(
+                                prompts: enhancementService.allPrompts,
                                 selectedPromptId: enhancementService.selectedPromptId,
-                                onPromptTap: { prompt in
+                                onPromptSelected: { prompt in
                                     enhancementService.setActivePrompt(prompt)
                                 },
-                                onPromptEdit: { prompt in
+                                onEditPrompt: { prompt in
                                     selectedPromptForEdit = prompt
                                 },
-                                onPromptDelete: { prompt in
+                                onDeletePrompt: { prompt in
                                     enhancementService.deletePrompt(prompt)
                                 },
-                                onAddNew: {
+                                onAddNewPrompt: {
                                     isEditingPrompt = true
-                                },
-                                assistantTriggerWord: enhancementService.assistantTriggerWord
+                                }
                             )
-                        }
-                        
-                        Divider()
-                        
-                        // Assistant Mode Section
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text("Assistant Prompt")
-                                    .font(.subheadline)
-                                Image(systemName: "sparkles")
-                                    .foregroundColor(.accentColor)
-                            }
-                            
-                            Text("Configure how to trigger the AI assistant mode")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("Current Trigger:")
-                                        .font(.subheadline)
-                                    Text("\"\(enhancementService.assistantTriggerWord)\"")
-                                        .font(.system(.subheadline, design: .monospaced))
-                                        .foregroundColor(.accentColor)
-                                }
-                                
-                                if isEditingTriggerWord {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        HStack {
-                                            TextField("New trigger word", text: $tempTriggerWord)
-                                                .textFieldStyle(.roundedBorder)
-                                                .frame(maxWidth: 200)
-                                            
-                                            Button("Save") {
-                                                enhancementService.assistantTriggerWord = tempTriggerWord
-                                                isEditingTriggerWord = false
-                                            }
-                                            .buttonStyle(.borderedProminent)
-                                            .disabled(tempTriggerWord.isEmpty)
-                                            
-                                            Button("Cancel") {
-                                                isEditingTriggerWord = false
-                                                tempTriggerWord = enhancementService.assistantTriggerWord
-                                            }
-                                            .buttonStyle(.bordered)
-                                        }
-                                        
-                                        Text("Default: \"hey\"")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                } else {
-                                    Button("Change Trigger Word") {
-                                        tempTriggerWord = enhancementService.assistantTriggerWord
-                                        isEditingTriggerWord = true
-                                    }
-                                    .buttonStyle(.bordered)
-                                }
-                            }
-                            
-                            Text("Start with \"\(enhancementService.assistantTriggerWord), \" to use AI assistant mode")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text("Instead of enhancing the text, VoiceInk will respond like a conversational AI assistant")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
                     }
                     .padding()

@@ -564,20 +564,20 @@ struct ConfigurationView: View {
                                     .foregroundColor(.primary)
                                 
                                 PromptSelectionGrid(
+                                    prompts: enhancementService.allPrompts,
                                     selectedPromptId: selectedPromptId,
-                                    onPromptTap: { prompt in
+                                    onPromptSelected: { prompt in
                                         selectedPromptId = prompt.id
                                     },
-                                    onPromptEdit: { prompt in
+                                    onEditPrompt: { prompt in
                                         selectedPromptForEdit = prompt
                                     },
-                                    onPromptDelete: { prompt in
+                                    onDeletePrompt: { prompt in
                                         enhancementService.deletePrompt(prompt)
                                     },
-                                    onAddNew: {
+                                    onAddNewPrompt: {
                                         isEditingPrompt = true
-                                    },
-                                    assistantTriggerWord: enhancementService.assistantTriggerWord
+                                    }
                                 )
                             }
 

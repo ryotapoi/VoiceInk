@@ -20,21 +20,10 @@ class PromptDetectionService {
         let originalEnhancementState = enhancementService.isEnhancementEnabled
         let originalPromptId = enhancementService.selectedPromptId
         
-        if let result = checkAssistantTrigger(text: text, triggerWord: enhancementService.assistantTriggerWord) {
-            return PromptDetectionResult(
-                shouldEnableAI: true,
-                selectedPromptId: PredefinedPrompts.assistantPromptId,
-                processedText: result,
-                detectedTriggerWord: enhancementService.assistantTriggerWord,
-                originalEnhancementState: originalEnhancementState,
-                originalPromptId: originalPromptId
-            )
-        }
-        
         for prompt in enhancementService.allPrompts {
             if let triggerWord = prompt.triggerWord?.trimmingCharacters(in: .whitespacesAndNewlines),
                !triggerWord.isEmpty,
-               let result = checkCustomTrigger(text: text, triggerWord: triggerWord) {
+               let result = removeTriggerWord(from: text, triggerWord: triggerWord) {
                 
                 return PromptDetectionResult(
                     shouldEnableAI: true,
@@ -85,14 +74,6 @@ class PromptDetectionService {
                 }
             }
         }
-    }
-    
-    private func checkAssistantTrigger(text: String, triggerWord: String) -> String? {
-        return removeTriggerWord(from: text, triggerWord: triggerWord)
-    }
-    
-    private func checkCustomTrigger(text: String, triggerWord: String) -> String? {
-        return removeTriggerWord(from: text, triggerWord: triggerWord)
     }
     
     private func removeTriggerWord(from text: String, triggerWord: String) -> String? {
