@@ -476,9 +476,9 @@ struct ConfigurationView: View {
                                     return aiService.selectedProvider
                                 },
                                 set: { newValue in
-                                    selectedAIProvider = newValue.rawValue
-                                    // Reset model when provider changes
-                                    selectedAIModel = nil
+                                    selectedAIProvider = newValue.rawValue // Update local state for UI responsiveness
+                                    aiService.selectedProvider = newValue // Update global AI service state
+                                    selectedAIModel = nil                 // Reset selected model when provider changes
                                 }
                             )
                             
@@ -540,7 +540,11 @@ struct ConfigurationView: View {
                                                 // Just return the current model without modifying state
                                                 return aiService.currentModel
                                             },
-                                            set: { selectedAIModel = $0 }
+                                            set: { newModelValue in
+                                                selectedAIModel = newModelValue // Update local state
+                                                // Update the model in AIService for the current provider
+                                                aiService.selectModel(newModelValue)
+                                            }
                                         )
                                         
                                         let models = provider == .ollama ? aiService.availableModels : provider.availableModels
