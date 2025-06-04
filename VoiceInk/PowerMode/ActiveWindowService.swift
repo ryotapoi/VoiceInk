@@ -134,14 +134,12 @@ class ActiveWindowService: ObservableObject {
             }
         }
         
+        // Wait for UI changes and model loading to complete first
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+
+        // Then check if we should capture
         if config.isAIEnhancementEnabled && config.useScreenCapture {
-            let shouldCaptureScreen = !wasEnhancementEnabled || !wasScreenCaptureEnabled
-            
-            if shouldCaptureScreen {
-                // Wait a moment for UI changes and model loading to complete
-                try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
-                await enhancementService.captureScreenContext()
-            }
+            await enhancementService.captureScreenContext()
         }
     }
 } 
