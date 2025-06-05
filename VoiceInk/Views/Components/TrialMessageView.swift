@@ -3,6 +3,7 @@ import SwiftUI
 struct TrialMessageView: View {
     let message: String
     let type: MessageType
+    var onAddLicenseKey: (() -> Void)? = nil
     
     enum MessageType {
         case warning
@@ -26,14 +27,22 @@ struct TrialMessageView: View {
             
             Spacer()
             
-            if type == .expired || type == .warning {
+            HStack(spacing: 12) {
+                Button(action: {
+                    onAddLicenseKey?()
+                }) {
+                    Text("Enter License")
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .buttonStyle(.bordered)
+
                 Button(action: {
                     if let url = URL(string: "https://tryvoiceink.com/buy") {
                         NSWorkspace.shared.open(url)
                     }
                 }) {
-                    Text(type == .expired ? "Upgrade Now" : "Upgrade")
-                        .font(.headline)
+                    Text("Buy License")
+                        .font(.system(size: 13, weight: .medium))
                 }
                 .buttonStyle(.borderedProminent)
             }
