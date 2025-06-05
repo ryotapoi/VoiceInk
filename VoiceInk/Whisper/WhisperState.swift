@@ -126,6 +126,14 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
             if let recordedFile {
                 if !shouldCancelRecording {
                     await transcribeAudio(recordedFile)
+                } else {
+                    logger.info("🛑 Transcription and paste aborted in toggleRecord due to shouldCancelRecording flag.")
+                    await MainActor.run {
+                        isProcessing = false
+                        isTranscribing = false
+                        canTranscribe = true
+                    }
+                    await cleanupModelResources()
                 }
             } else {
                 logger.error("❌ No recorded file found after stopping recording")
@@ -238,7 +246,16 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     }
 
     private func transcribeAudio(_ url: URL) async {
-        if shouldCancelRecording { return }
+        if shouldCancelRecording {
+            logger.info("🎤 Transcription and paste aborted at the beginning of transcribeAudio due to shouldCancelRecording flag.")
+            await MainActor.run {
+                isProcessing = false
+                isTranscribing = false
+                canTranscribe = true
+            }
+            await cleanupModelResources()
+            return
+        }
         await MainActor.run {
             isProcessing = true
             isTranscribing = true
