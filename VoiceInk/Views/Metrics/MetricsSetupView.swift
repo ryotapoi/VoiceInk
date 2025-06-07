@@ -12,7 +12,7 @@ struct MetricsSetupView: View {
                 VStack(spacing: geometry.size.height * 0.05) {
                     // Header
                     VStack(spacing: geometry.size.height * 0.02) {
-                        AppIconView(size: min(90, geometry.size.width * 0.15), cornerRadius: 22)
+                        AppIconView()
                         
                         VStack(spacing: geometry.size.height * 0.01) {
                             Text("Welcome to VoiceInk")

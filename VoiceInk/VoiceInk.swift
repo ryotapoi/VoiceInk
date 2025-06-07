@@ -145,7 +145,7 @@ struct VoiceInkApp: App {
                 $0.size.height = 22
                 $0.size.width = 22 / ratio
                 return $0
-            }(NSImage(named: "menuBarIcon")!)
+            }(NSImage(named: "AppIcon")!)
 
             Image(nsImage: image)
         }
