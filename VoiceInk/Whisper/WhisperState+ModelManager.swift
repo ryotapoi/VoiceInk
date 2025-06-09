@@ -122,7 +122,7 @@ extension WhisperState {
     }
     
     // Shows an alert about Core ML support and first-run optimization
-    private func showCoreMLAlert(for model: PredefinedModel, completion: @escaping () -> Void) {
+    private func showCoreMLAlert(for model: LocalModel, completion: @escaping () -> Void) {
         Task { @MainActor in
             let alert = NSAlert()
             alert.messageText = "Core ML Support for \(model.displayName) Model"
@@ -138,7 +138,7 @@ extension WhisperState {
         }
     }
     
-    func downloadModel(_ model: PredefinedModel) async {
+    func downloadModel(_ model: LocalModel) async {
         guard let url = URL(string: model.downloadURL) else { return }
         
         // Check if model supports Core ML (non-quantized models)
@@ -160,7 +160,7 @@ extension WhisperState {
         }
     }
     
-    private func performModelDownload(_ model: PredefinedModel, _ url: URL) async {
+    private func performModelDownload(_ model: LocalModel, _ url: URL) async {
         do {
             let whisperModel = try await downloadMainModel(model, from: url)
             
@@ -176,7 +176,7 @@ extension WhisperState {
         }
     }
     
-    private func downloadMainModel(_ model: PredefinedModel, from url: URL) async throws -> WhisperModel {
+    private func downloadMainModel(_ model: LocalModel, from url: URL) async throws -> WhisperModel {
         let progressKeyMain = model.name + "_main"
         let data = try await downloadFileWithProgress(from: url, progressKey: progressKeyMain)
         
@@ -232,8 +232,7 @@ extension WhisperState {
         return model
     }
     
-    private func handleModelDownloadError(_ model: PredefinedModel, _ error: Error) {
-        currentError = .modelDownloadFailed
+    private func handleModelDownloadError(_ model: LocalModel, _ error: Error) {
         self.downloadProgress.removeValue(forKey: model.name + "_main")
         self.downloadProgress.removeValue(forKey: model.name + "_coreml")
     }
@@ -262,7 +261,6 @@ extension WhisperState {
             }
         } catch {
             logError("Error deleting model: \(model.name)", error)
-            currentError = .modelDeletionFailed
         }
     }
     

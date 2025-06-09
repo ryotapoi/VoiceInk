@@ -375,9 +375,12 @@ struct ConfigurationView: View {
                                     .foregroundColor(.secondary)
                                 
                                 Picker("", selection: modelBinding) {
-                                    ForEach(whisperState.availableModels) { model in
-                                        let displayName = whisperState.predefinedModels.first { $0.name == model.name }?.displayName ?? model.name
-                                        Text(displayName).tag(model.name as String?)
+                                    Text("Default")
+                                        .tag(nil as String?)
+                                    
+                                    ForEach(whisperState.usableModels, id: \.name) { model in
+                                        Text(model.displayName)
+                                            .tag(model.name as String?)
                                     }
                                 }
                                 .labelsHidden()
@@ -387,7 +390,7 @@ struct ConfigurationView: View {
                         
                         // Language Selection Subsection
                         if let selectedModel = effectiveModelName,
-                           let modelInfo = whisperState.predefinedModels.first(where: { $0.name == selectedModel }),
+                           let modelInfo = whisperState.allAvailableModels.first(where: { $0.name == selectedModel }),
                            modelInfo.isMultilingualModel {
                             
                             // Create a simple binding that uses UserDefaults language if nil
@@ -416,7 +419,7 @@ struct ConfigurationView: View {
                                 .frame(maxWidth: .infinity)
                             }
                         } else if let selectedModel = effectiveModelName,
-                                  let modelInfo = whisperState.predefinedModels.first(where: { $0.name == selectedModel }),
+                                  let modelInfo = whisperState.allAvailableModels.first(where: { $0.name == selectedModel }),
                                   !modelInfo.isMultilingualModel {
                             // Silently set to English without showing UI
                             EmptyView()
@@ -488,7 +491,7 @@ struct ConfigurationView: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                 } else {
                                     Picker("", selection: providerBinding) {
-                                        ForEach(aiService.connectedProviders, id: \.self) { provider in
+                                        ForEach(aiService.connectedProviders.filter { $0 != .elevenLabs }, id: \.self) { provider in
                                             Text(provider.rawValue).tag(provider)
                                         }
                                     }

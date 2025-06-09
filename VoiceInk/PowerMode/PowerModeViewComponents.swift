@@ -105,7 +105,7 @@ struct ConfigurationRow: View {
     
     private var selectedModel: String? {
         if let modelName = config.selectedWhisperModel,
-           let model = whisperState.predefinedModels.first(where: { $0.name == modelName }) {
+           let model = whisperState.allAvailableModels.first(where: { $0.name == modelName }) {
             return model.displayName
         }
         return "Default"
@@ -117,7 +117,7 @@ struct ConfigurationRow: View {
             if langCode == "en" { return "English" }
             
             if let modelName = config.selectedWhisperModel,
-               let model = whisperState.predefinedModels.first(where: { $0.name == modelName }),
+               let model = whisperState.allAvailableModels.first(where: { $0.name == modelName }),
                let langName = model.supportedLanguages[langCode] {
                 return langName
             }
