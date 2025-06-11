@@ -3,22 +3,18 @@
     <channel>
         <title>VoiceInk Releases</title>
         <item>
-            <title>1.31</title>
-            <pubDate>Sat, 5 June 2025 12:20:00 +0545</pubDate>
-            <sparkle:version>131</sparkle:version>
-            <sparkle:shortVersionString>1.31</sparkle:shortVersionString>
+            <title>1.33</title>
+            <pubDate>Sat, 11 June 2025 12:20:00 +0545</pubDate>
+            <sparkle:version>133</sparkle:version>
+            <sparkle:shortVersionString>1.33</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                    <h3>What's New in Version 1.31 🚀⚡</h3>
+                    <h3>What's New in Version 1.33 🚀⚡</h3>
                             <ul>
-                                <li>📥 Added support for Importing & Exporting Prompts/Power Mode Configuration & general app settings</li>
-                                <li>😊 Added support for using custom emoji in Power Mode</li>
-                                <li>🌐 Added Yandex browser support for Power Mode</li>
-                                <li>🔧 Fixed ESC not properly cancelling transcription</li>
-                                <li>⚙️ Fixed Ollama model selection not updating in Power Mode</li>
+                                <li>🌐 Added support for cloud models(Groq's Whisper large V3 turbo & Eleven Labs Scribe v1)</li>
                             </ul>
             ]]></description>
-           <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.31/VoiceInk.dmg" length="7599036" type="application/octet-stream" sparkle:edSignature="FvJ6HHBmRt8iNHNtVPpejqHIQSnslVJMVaUub+ueyai6/93PZ6WeMVtxVRfYi/2BHdMfMLytH8RXGWqK/fVlBQ=="/>
+           <enclosure url="https://github.com/Beingpax/VoiceInk/releases/download/v1.33/VoiceInk.dmg" length="7698344" type="application/octet-stream" sparkle:edSignature="OrW64vwLAsz/S4RkVrIah6EiVjjHL1qO3sfJ0a4scbisFyv8CzjyBiPy/SdMfECITNoD2Z5xGz4fiXGIsR1+CA=="/>
         </item>
     </channel>
 </rss>
