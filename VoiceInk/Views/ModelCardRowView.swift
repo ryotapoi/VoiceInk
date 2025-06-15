@@ -234,6 +234,7 @@ struct CloudModelCardView: View {
     let isCurrent: Bool
     var setDefaultAction: () -> Void
     
+    @EnvironmentObject private var whisperState: WhisperState
     @StateObject private var aiService = AIService()
     @State private var isExpanded = false
     @State private var apiKey = ""
@@ -531,6 +532,16 @@ struct CloudModelCardView: View {
         apiKey = ""
         verificationStatus = .none
         isConfiguredState = false
+        
+        // If this model is currently the default, clear it
+        if isCurrent {
+            Task {
+                await MainActor.run {
+                    whisperState.currentTranscriptionModel = nil
+                    UserDefaults.standard.removeObject(forKey: "CurrentTranscriptionModel")
+                }
+            }
+        }
         
         withAnimation(.easeInOut(duration: 0.3)) {
             isExpanded = false
