@@ -5,6 +5,7 @@ enum ModelProvider: String, Codable, Hashable, CaseIterable {
     case local = "Local"
     case groq = "Groq"
     case elevenLabs = "ElevenLabs"
+    case deepgram = "Deepgram"
     // Future providers can be added here
 }
 

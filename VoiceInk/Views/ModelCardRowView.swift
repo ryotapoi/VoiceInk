@@ -29,7 +29,7 @@ struct ModelCardRowView: View {
                         downloadAction: downloadAction
                     )
                 }
-            case .groq, .elevenLabs:
+            case .groq, .elevenLabs, .deepgram:
                 if let cloudModel = model as? CloudModel {
                     CloudModelCardView(
                         model: cloudModel,
@@ -259,6 +259,8 @@ struct CloudModelCardView: View {
             return "GROQ"
         case .elevenLabs:
             return "ElevenLabs"
+        case .deepgram:
+            return "Deepgram"
         default:
             return model.provider.rawValue
         }
@@ -497,6 +499,8 @@ struct CloudModelCardView: View {
             aiService.selectedProvider = .groq
         } else if model.provider == .elevenLabs {
             aiService.selectedProvider = .elevenLabs
+        } else if model.provider == .deepgram {
+            aiService.selectedProvider = .deepgram
         }
         
         aiService.verifyAPIKey(apiKey) { [self] isValid in

@@ -387,6 +387,8 @@ struct APIKeyManagementView: View {
                                             URL(string: "https://console.mistral.ai/api-keys")!
                                         case .elevenLabs:
                                             URL(string: "https://elevenlabs.io/speech-synthesis")!
+                                        case .deepgram:
+                                            URL(string: "https://console.deepgram.com/api-keys")!
                                         case .ollama, .custom:
                                             URL(string: "")! // This case should never be reached
                                         }

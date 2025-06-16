@@ -144,7 +144,16 @@ import Foundation
            isMultilingual: true,
            supportedLanguages: getLanguageDictionary(isMultilingual: true, isLargeV3: true)
        ),
-
+       CloudModel(
+           name: "nova-2",
+           displayName: "Nova (Deepgram)",
+           description: "Deepgram's Nova model for fast, accurate, and cost-effective transcription.",
+           provider: .deepgram,
+           speed: 0.9,
+           accuracy: 0.95,
+           isMultilingual: true,
+           supportedLanguages: getLanguageDictionary(isMultilingual: true, isLargeV3: true)
+       ),
      ]
  
      static let allLanguages = [
