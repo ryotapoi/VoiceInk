@@ -19,11 +19,17 @@ class NotificationManager {
     ) {
         dismissTimer?.invalidate()
         dismissTimer = nil
-        
+
         if let existingWindow = notificationWindow {
             existingWindow.close()
             notificationWindow = nil
         }
+        
+        // Play esc sound for error notifications
+        if type == .error {
+            SoundManager.shared.playEscSound()
+        }
+        
         let notificationView = AppNotificationView(
             title: title, 
             message: message, 
@@ -65,7 +71,7 @@ class NotificationManager {
             panel.animator().alphaValue = 1
         })
         
-        dismissTimer?.invalidate()
+        // Schedule a new timer to dismiss the new notification.
         dismissTimer = Timer.scheduledTimer(
             withTimeInterval: duration,
             repeats: false
@@ -90,6 +96,8 @@ class NotificationManager {
     func dismissNotification() {
         guard let window = notificationWindow else { return }
         
+        notificationWindow = nil
+        
         dismissTimer?.invalidate()
         dismissTimer = nil
         
@@ -99,7 +107,7 @@ class NotificationManager {
             window.animator().alphaValue = 0
         }, completionHandler: {
             window.close()
-            self.notificationWindow = nil
+
         })
     }
 } 

@@ -90,7 +90,7 @@ struct AppNotificationView: View {
                 GeometryReader { geometry in
                     Rectangle()
                         .fill(Color.accentColor.opacity(0.6))
-                        .frame(width: geometry.size.width * progress, height: 2)
+                        .frame(width: geometry.size.width * max(0, progress), height: 2)
                         .animation(.linear(duration: 0.1), value: progress)
                 }
                 .frame(height: 2)
@@ -118,9 +118,10 @@ struct AppNotificationView: View {
         
         timer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { _ in
             if progress > 0 {
-                progress -= stepDecrement
+                progress = max(0, progress - stepDecrement)
             } else {
                 timer?.invalidate()
+                timer = nil
             }
         }
     }
