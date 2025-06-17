@@ -196,7 +196,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                             }
 
                             if let enhancementService = self.enhancementService,
-                               enhancementService.isEnhancementEnabled &&
                                enhancementService.useScreenCaptureContext {
                                 await enhancementService.captureScreenContext()
                             }
