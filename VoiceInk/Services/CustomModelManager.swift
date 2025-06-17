@@ -52,7 +52,7 @@ class CustomModelManager: ObservableObject {
         }
     }
     
-    private func saveCustomModels() {
+    func saveCustomModels() {
         do {
             let data = try JSONEncoder().encode(customModels)
             userDefaults.set(data, forKey: customModelsKey)
