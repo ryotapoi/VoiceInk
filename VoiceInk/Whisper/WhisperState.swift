@@ -59,6 +59,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     // Transcription Services
     private var localTranscriptionService: LocalTranscriptionService
     private let cloudTranscriptionService = CloudTranscriptionService()
+    private let nativeAppleTranscriptionService = NativeAppleTranscriptionService()
     
     private var modelUrl: URL? {
         let possibleURLs = [
@@ -294,8 +295,16 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
                 throw WhisperStateError.transcriptionFailed
             }
             
+            let transcriptionService: TranscriptionService
+            switch model.provider {
+            case .local:
+                transcriptionService = localTranscriptionService
+            case .nativeApple:
+                transcriptionService = nativeAppleTranscriptionService
+            default:
+                transcriptionService = cloudTranscriptionService
+            }
 
-            let transcriptionService: TranscriptionService = (model.provider == .local) ? localTranscriptionService : cloudTranscriptionService
             var text = try await transcriptionService.transcribe(audioURL: url, model: model)
             text = text.trimmingCharacters(in: .whitespacesAndNewlines)
             
