@@ -47,7 +47,7 @@ enum AIProvider: String, CaseIterable {
         case .deepSeek:
             return "deepseek-chat"
         case .gemini:
-            return "gemini-2.0-flash"
+            return "gemini-2.5-pro"
         case .anthropic:
             return "claude-3-5-sonnet-20241022"
         case .mistral:
@@ -82,7 +82,8 @@ enum AIProvider: String, CaseIterable {
             ]
         case .gemini:
             return [
-                "gemini-2.5-flash-preview-04-17",
+                "gemini-2.5-pro",
+                "gemini-2.5-flash",
                 "gemini-2.0-flash",
                 "gemini-2.0-flash-lite"
             ]
