@@ -12,6 +12,8 @@ class Recorder: ObservableObject {
     private var isReconfiguring = false
     private let mediaController = MediaController.shared
     @Published var audioMeter = AudioMeter(averagePower: 0, peakPower: 0)
+    private var audioLevelCheckTask: Task<Void, Never>?
+    private var hasDetectedAudioInCurrentSession = false
     
     enum RecorderError: Error {
         case couldNotStartRecording
@@ -78,6 +80,8 @@ class Recorder: ObservableObject {
         }
         UserDefaults.standard.set(String(currentDeviceID), forKey: "lastUsedMicrophoneDeviceID")
         
+        hasDetectedAudioInCurrentSession = false
+        
         Task { 
             await mediaController.muteSystemAudio()
         }
@@ -112,10 +116,28 @@ class Recorder: ObservableObject {
                 throw RecorderError.couldNotStartRecording
             }
             
+            audioLevelCheckTask?.cancel()
+            
             Task {
                 while recorder != nil {
                     updateAudioMeter()
                     try? await Task.sleep(nanoseconds: 33_000_000)
+                }
+            }
+            
+            audioLevelCheckTask = Task {
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                
+                if Task.isCancelled { return }
+                
+                if !self.hasDetectedAudioInCurrentSession {
+                    await MainActor.run {
+                        NotificationManager.shared.showNotification(
+                            title: "No Audio Detected",
+                            message: "Is your microphone muted? Please check your audio input settings.",
+                            type: .warning
+                        )
+                    }
                 }
             }
             
@@ -127,6 +149,7 @@ class Recorder: ObservableObject {
     }
     
     func stopRecording() {
+        audioLevelCheckTask?.cancel()
         recorder?.stop()
         recorder = nil
         audioMeter = AudioMeter(averagePower: 0, peakPower: 0)
@@ -164,7 +187,13 @@ class Recorder: ObservableObject {
             normalizedPeak = (peakPower - minVisibleDb) / (maxVisibleDb - minVisibleDb)
         }
         
-        audioMeter = AudioMeter(averagePower: Double(normalizedAverage), peakPower: Double(normalizedPeak))
+        let newAudioMeter = AudioMeter(averagePower: Double(normalizedAverage), peakPower: Double(normalizedPeak))
+
+        if !hasDetectedAudioInCurrentSession && newAudioMeter.averagePower > 0.01 {
+            hasDetectedAudioInCurrentSession = true
+        }
+        
+        audioMeter = newAudioMeter
     }
     
     deinit {
