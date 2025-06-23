@@ -57,7 +57,7 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
     let modelContext: ModelContext
     
     // Transcription Services
-    private var localTranscriptionService: LocalTranscriptionService
+    private var localTranscriptionService: LocalTranscriptionService!
     private let cloudTranscriptionService = CloudTranscriptionService()
     private let nativeAppleTranscriptionService = NativeAppleTranscriptionService()
     
@@ -98,9 +98,6 @@ class WhisperState: NSObject, ObservableObject, AVAudioRecorderDelegate {
         
         self.modelsDirectory = appSupportDirectory.appendingPathComponent("WhisperModels")
         self.recordingsDirectory = appSupportDirectory.appendingPathComponent("Recordings")
-        
-        // Initialize services without whisperState reference first
-        self.localTranscriptionService = LocalTranscriptionService(modelsDirectory: self.modelsDirectory)
         
         self.enhancementService = enhancementService
         self.licenseViewModel = LicenseViewModel()
