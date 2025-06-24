@@ -455,7 +455,7 @@ class AIEnhancementService: ObservableObject {
         guard retryCount < maxRetries - 1 else { return false }
         
         switch error {
-        case .rateLimitExceeded, .serverError, .networkError:
+        case .rateLimitExceeded, .serverError:
             return true
         default:
             return false

@@ -535,5 +535,3 @@ class AIService: ObservableObject {
 extension Notification.Name {
     static let aiProviderKeyChanged = Notification.Name("aiProviderKeyChanged")
 } 
-
-
