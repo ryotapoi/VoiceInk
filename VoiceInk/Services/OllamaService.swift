@@ -54,13 +54,8 @@ class OllamaService: ObservableObject {
         self.baseURL = UserDefaults.standard.string(forKey: "ollamaBaseURL") ?? Self.defaultBaseURL
         self.selectedModel = UserDefaults.standard.string(forKey: "ollamaSelectedModel") ?? "llama2"
         
-        // Initial connection check and model list fetch
-        Task {
-            await checkConnection()
-            if isConnected {
-                await refreshModels()
-            }
-        }
+        // Note: Removed automatic initialization to prevent startup delays
+        // Connection check and model refresh will be called when actually needed
     }
     
     @MainActor

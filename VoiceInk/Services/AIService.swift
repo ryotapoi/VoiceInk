@@ -161,7 +161,7 @@ class AIService: ObservableObject {
     
     @Published private var selectedModels: [AIProvider: String] = [:]
     private let userDefaults = UserDefaults.standard
-    private let ollamaService = OllamaService()
+    private lazy var ollamaService = OllamaService()
     
     var connectedProviders: [AIProvider] {
         AIProvider.allCases.filter { provider in
@@ -205,12 +205,7 @@ class AIService: ObservableObject {
             }
         } else {
             self.isAPIKeyValid = true
-            if selectedProvider == .ollama {
-                Task {
-                    await ollamaService.checkConnection()
-                    await ollamaService.refreshModels()
-                }
-            }
+          
         }
         
         loadSavedModelSelections()
@@ -456,6 +451,14 @@ class AIService: ObservableObject {
     }
     
     func enhanceWithOllama(text: String, systemPrompt: String) async throws -> String {
+        // Ensure connection is established before attempting enhancement
+        if !ollamaService.isConnected {
+            await ollamaService.checkConnection()
+            if ollamaService.isConnected && ollamaService.availableModels.isEmpty {
+                await ollamaService.refreshModels()
+            }
+        }
+        
         logger.notice("🔄 Sending transcription to Ollama for enhancement (model: \(self.ollamaService.selectedModel))")
         do {
             let result = try await ollamaService.enhance(text, withSystemPrompt: systemPrompt)
