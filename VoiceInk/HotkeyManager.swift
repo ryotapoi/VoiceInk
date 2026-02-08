@@ -70,6 +70,10 @@ class HotkeyManager: ObservableObject {
     private var fnDebounceTask: Task<Void, Never>?
     private var pendingFnKeyState: Bool? = nil
     private var pendingFnEventTime: TimeInterval? = nil
+    private var globalKeyDownMonitor: Any?
+    private var localKeyDownMonitor: Any?
+    private nonisolated(unsafe) var fnComboDetected = false
+    private nonisolated(unsafe) var fnDebounceActive = false
 
     // Keyboard shortcut state tracking
     private var shortcutKeyPressEventTime: TimeInterval?
@@ -195,8 +199,32 @@ class HotkeyManager: ObservableObject {
             }
             return event
         }
+
+        if selectedHotkey1 == .fn || selectedHotkey2 == .fn {
+            setupFnKeyDownMonitoring()
+        }
     }
-    
+
+    private func setupFnKeyDownMonitoring() {
+        globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown, .keyUp]) { [weak self] event in
+            self?.handleKeyEventDuringFnDebounce(event)
+        }
+        localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .keyUp]) { [weak self] event in
+            self?.handleKeyEventDuringFnDebounce(event)
+            return event
+        }
+    }
+
+    private nonisolated func handleKeyEventDuringFnDebounce(_ event: NSEvent) {
+        guard self.fnDebounceActive else { return }
+        self.fnComboDetected = true
+        self.fnDebounceActive = false
+        Task { @MainActor in
+            self.fnDebounceTask?.cancel()
+            self.fnDebounceTask = nil
+        }
+    }
+
     private func setupMiddleClickMonitoring() {
         guard isMiddleClickToggleEnabled else { return }
 
@@ -264,7 +292,16 @@ class HotkeyManager: ObservableObject {
             NSEvent.removeMonitor(monitor)
             localEventMonitor = nil
         }
-        
+
+        if let monitor = globalKeyDownMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalKeyDownMonitor = nil
+        }
+        if let monitor = localKeyDownMonitor {
+            NSEvent.removeMonitor(monitor)
+            localKeyDownMonitor = nil
+        }
+
         for monitor in middleClickMonitors {
             if let monitor = monitor {
                 NSEvent.removeMonitor(monitor)
@@ -283,6 +320,8 @@ class HotkeyManager: ObservableObject {
         shortcutCurrentKeyState = false
         shortcutKeyPressEventTime = nil
         isShortcutHandsFreeMode = false
+        fnComboDetected = false
+        fnDebounceActive = false
     }
     
     private func handleModifierKeyEvent(_ event: NSEvent) async {
@@ -310,13 +349,41 @@ class HotkeyManager: ObservableObject {
             isKeyPressed = flags.contains(.control)
         case .fn:
             isKeyPressed = flags.contains(.function)
-            pendingFnKeyState = isKeyPressed
-            pendingFnEventTime = eventTime
-            fnDebounceTask?.cancel()
-            fnDebounceTask = Task { [pendingState = isKeyPressed, pendingTime = eventTime] in
-                try? await Task.sleep(nanoseconds: 75_000_000) // 75ms
-                if pendingFnKeyState == pendingState {
-                    await self.processKeyPress(isKeyPressed: pendingState, eventTime: pendingTime)
+            if isKeyPressed {
+                // Fn押下 — デバウンス開始
+                fnComboDetected = false
+                fnDebounceActive = true
+                pendingFnKeyState = true
+                pendingFnEventTime = eventTime
+                fnDebounceTask?.cancel()
+                fnDebounceTask = Task { [pendingTime = eventTime] in
+                    try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                    self.fnDebounceActive = false
+                    guard !Task.isCancelled else { return }
+                    guard !self.fnComboDetected else {
+                        self.fnDebounceTask = nil
+                        return
+                    }
+                    self.fnDebounceTask = nil  // デバウンス完了マーク
+                    self.pendingFnKeyState = nil  // 処理済みマーク
+                    await self.processKeyPress(isKeyPressed: true, eventTime: pendingTime)
+                }
+            } else {
+                // Fnリリース
+                fnDebounceActive = false
+                let wasDebouncing = (fnDebounceTask != nil)
+                fnDebounceTask?.cancel()
+                fnDebounceTask = nil
+
+                if fnComboDetected {
+                    pendingFnKeyState = nil
+                    fnComboDetected = false
+                } else if wasDebouncing {
+                    pendingFnKeyState = nil
+                    await processKeyPress(isKeyPressed: true, eventTime: pendingFnEventTime ?? eventTime)
+                    await processKeyPress(isKeyPressed: false, eventTime: eventTime)
+                } else {
+                    await processKeyPress(isKeyPressed: false, eventTime: eventTime)
                 }
             }
             return
