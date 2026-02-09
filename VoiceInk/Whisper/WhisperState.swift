@@ -447,7 +447,8 @@ class WhisperState: NSObject, ObservableObject {
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                CursorPaster.pasteAtCursor(textToPaste + " ")
+                let trailingSuffix = Self.needsTrailingSpace(textToPaste) ? " " : ""
+                CursorPaster.pasteAtCursor(textToPaste + trailingSuffix)
 
                 let powerMode = PowerModeManager.shared
                 if let activeConfig = powerMode.currentActiveConfiguration, activeConfig.isAutoSendEnabled {
@@ -484,5 +485,26 @@ class WhisperState: NSObject, ObservableObject {
 
     private func cleanupAndDismiss() async {
         await dismissMiniRecorder()
+    }
+
+    /// テキスト末尾がスペース区切り言語の文字なら true（英語等）、CJK等なら false
+    static func needsTrailingSpace(_ text: String) -> Bool {
+        guard let lastScalar = text.unicodeScalars.last else { return false }
+        let nonSpacedRanges: [ClosedRange<UInt32>] = [
+            0x3000...0x303F, // CJK Symbols and Punctuation (。、)
+            0x3040...0x309F, // Hiragana
+            0x30A0...0x30FF, // Katakana
+            0x4E00...0x9FFF, // CJK Unified Ideographs
+            0xAC00...0xD7AF, // Hangul Syllables
+            0x0E00...0x0E7F, // Thai
+            0xFF00...0xFFEF, // Fullwidth Forms
+        ]
+        let value = lastScalar.value
+        for range in nonSpacedRanges {
+            if range.contains(value) {
+                return false
+            }
+        }
+        return true
     }
 }

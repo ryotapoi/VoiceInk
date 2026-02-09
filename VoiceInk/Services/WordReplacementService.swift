@@ -43,9 +43,11 @@ class WordReplacementService {
                             withTemplate: replacementText
                         )
                     }
+                    applyTrailingMatch(text: &modifiedText, original: original, replacement: replacementText)
                 } else {
                     // Fallback substring replace for non-spaced scripts
                     modifiedText = modifiedText.replacingOccurrences(of: original, with: replacementText, options: .caseInsensitive)
+                    applyTrailingMatch(text: &modifiedText, original: original, replacement: replacementText)
                 }
             }
         }
@@ -53,7 +55,22 @@ class WordReplacementService {
         return modifiedText
     }
 
+    /// パターン末尾がスペースの場合、テキスト末尾ではスペースなしでもマッチさせる
+    private func applyTrailingMatch(text: inout String, original: String, replacement: String) {
+        let trimmedOriginal = original.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)
+        guard trimmedOriginal != original else { return }
+        let trimmedReplacement = replacement.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)
+        if let range = text.range(of: trimmedOriginal, options: [.caseInsensitive, .anchored, .backwards]) {
+            text.replaceSubrange(range, with: trimmedReplacement)
+        }
+    }
+
     private func usesWordBoundaries(for text: String) -> Bool {
+        // Word boundaries require at least one word character to anchor on
+        if !text.unicodeScalars.contains(where: { CharacterSet.alphanumerics.contains($0) || $0 == "_" }) {
+            return false
+        }
+
         // Returns false for languages without spaces (CJK, Thai), true for spaced languages
         let nonSpacedScripts: [ClosedRange<UInt32>] = [
             0x3040...0x309F, // Hiragana
