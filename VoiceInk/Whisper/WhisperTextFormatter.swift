@@ -89,7 +89,8 @@ struct WhisperTextFormatter {
             }
 
             if !sentencesForThisFinalChunk.isEmpty {
-                let segmentStringToAppend = sentencesForThisFinalChunk.joined(separator: " ")
+                let separator = Self.needsSpaceBetweenSentences(detectedLanguage, text: text) ? " " : ""
+                let segmentStringToAppend = sentencesForThisFinalChunk.joined(separator: separator)
                 
                 if !finalFormattedText.isEmpty {
                     finalFormattedText += "\n\n"
@@ -120,4 +121,27 @@ struct WhisperTextFormatter {
         
         return finalFormattedText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-} 
+
+    private static func needsSpaceBetweenSentences(_ language: NLLanguage?, text: String) -> Bool {
+        if let language {
+            let nonSpacedLanguages: Set<NLLanguage> = [
+                .japanese, .simplifiedChinese, .traditionalChinese, .thai
+            ]
+            return !nonSpacedLanguages.contains(language)
+        }
+        // 言語検出失敗時はCJK/Thai文字の有無で判定
+        let nonSpacedRanges: [ClosedRange<UInt32>] = [
+            0x3040...0x309F, // Hiragana
+            0x30A0...0x30FF, // Katakana
+            0x4E00...0x9FFF, // CJK Unified Ideographs
+            0x0E00...0x0E7F, // Thai
+        ]
+        for scalar in text.unicodeScalars {
+            let value = scalar.value
+            for range in nonSpacedRanges {
+                if range.contains(value) { return false }
+            }
+        }
+        return true
+    }
+}
