@@ -41,6 +41,10 @@ struct ConfigurationView: View {
     
     @State private var isShowingDeleteConfirmation = false
 
+    // Script Hook
+    @State private var scriptHookPath: String
+    @State private var scriptHookTimeout: TimeInterval
+
     // PowerMode hotkey configuration
     @State private var powerModeConfigId: UUID = UUID()
 
@@ -100,6 +104,8 @@ struct ConfigurationView: View {
             _useScreenCapture = State(initialValue: false)
             _isAutoSendEnabled = State(initialValue: false)
             _isDefault = State(initialValue: false)
+            _scriptHookPath = State(initialValue: "")
+            _scriptHookTimeout = State(initialValue: 30.0)
             // Default to current global AI provider/model for new configurations - use UserDefaults only
             _selectedAIProvider = State(initialValue: UserDefaults.standard.string(forKey: "selectedAIProvider"))
             _selectedAIModel = State(initialValue: nil) // Initialize to nil and set it after view appears
@@ -120,6 +126,8 @@ struct ConfigurationView: View {
             _isDefault = State(initialValue: latestConfig.isDefault)
             _selectedAIProvider = State(initialValue: latestConfig.selectedAIProvider)
             _selectedAIModel = State(initialValue: latestConfig.selectedAIModel)
+            _scriptHookPath = State(initialValue: latestConfig.scriptHookPath ?? "")
+            _scriptHookTimeout = State(initialValue: latestConfig.scriptHookTimeout ?? 30.0)
         }
     }
     
@@ -422,6 +430,36 @@ struct ConfigurationView: View {
                 }
             }
 
+            Section("Script Hook") {
+                HStack {
+                    TextField("Script path", text: $scriptHookPath)
+                        .textFieldStyle(.roundedBorder)
+
+                    Button("Browse...") {
+                        let panel = NSOpenPanel()
+                        panel.allowsMultipleSelection = false
+                        panel.canChooseDirectories = false
+                        panel.canChooseFiles = true
+                        if panel.runModal() == .OK, let url = panel.url {
+                            scriptHookPath = url.path
+                        }
+                    }
+                }
+
+                if !scriptHookPath.isEmpty {
+                    Picker("Timeout", selection: $scriptHookTimeout) {
+                        Text("10 seconds").tag(10.0 as TimeInterval)
+                        Text("30 seconds").tag(30.0 as TimeInterval)
+                        Text("60 seconds").tag(60.0 as TimeInterval)
+                        Text("120 seconds").tag(120.0 as TimeInterval)
+                    }
+                }
+
+                Text("Run a shell script to transform text after transcription. The script receives text via stdin and should output the result to stdout.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
             Section("Advanced") {
                 Toggle(isOn: $isDefault) {
                     HStack(spacing: 6) {
@@ -568,7 +606,9 @@ struct ConfigurationView: View {
                     selectedAIModel: selectedAIModel,
                     isAutoSendEnabled: isAutoSendEnabled,
                     isDefault: isDefault,
-                    hotkeyShortcut: hotkeyString
+                    hotkeyShortcut: hotkeyString,
+                    scriptHookPath: scriptHookPath.isEmpty ? nil : scriptHookPath,
+                    scriptHookTimeout: scriptHookPath.isEmpty ? nil : scriptHookTimeout
                 )
         case .edit(let config):
             var updatedConfig = config
@@ -586,6 +626,8 @@ struct ConfigurationView: View {
             updatedConfig.selectedAIModel = selectedAIModel
             updatedConfig.isDefault = isDefault
             updatedConfig.hotkeyShortcut = hotkeyString
+            updatedConfig.scriptHookPath = scriptHookPath.isEmpty ? nil : scriptHookPath
+            updatedConfig.scriptHookTimeout = scriptHookPath.isEmpty ? nil : scriptHookTimeout
             return updatedConfig
         }
     }

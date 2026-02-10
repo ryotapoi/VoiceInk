@@ -97,7 +97,19 @@ class AudioTranscriptionManager: ObservableObject {
                 }
 
                 text = WordReplacementService.shared.applyReplacements(to: text, using: modelContext)
-                
+
+                // Script Hook (Power Mode only)
+                if let activeConfig = activePowerModeConfig,
+                   activeConfig.isEnabled == true,
+                   let scriptPath = activeConfig.scriptHookPath,
+                   !scriptPath.isEmpty {
+                    let hookTimeout = activeConfig.scriptHookTimeout ?? 30.0
+                    text = await ScriptHookService.shared.execute(
+                        scriptPath: scriptPath, inputText: text, timeout: hookTimeout
+                    )
+                    logger.notice("📝 ScriptHook: \(text, privacy: .public)")
+                }
+
                 // Handle enhancement if enabled
                 if let enhancementService = whisperState.enhancementService,
                    enhancementService.isEnhancementEnabled,

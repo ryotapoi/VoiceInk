@@ -58,6 +58,18 @@ class AudioTranscriptionService: ObservableObject {
             text = WordReplacementService.shared.applyReplacements(to: text, using: modelContext)
             logger.notice("✅ Word replacements applied")
 
+            // Script Hook (Power Mode only)
+            if let activeConfig = activePowerModeConfig,
+               activeConfig.isEnabled == true,
+               let scriptPath = activeConfig.scriptHookPath,
+               !scriptPath.isEmpty {
+                let hookTimeout = activeConfig.scriptHookTimeout ?? 30.0
+                text = await ScriptHookService.shared.execute(
+                    scriptPath: scriptPath, inputText: text, timeout: hookTimeout
+                )
+                logger.notice("📝 ScriptHook: \(text, privacy: .public)")
+            }
+
             let audioAsset = AVURLAsset(url: url)
             let duration = CMTimeGetSeconds(try await audioAsset.load(.duration))
             let recordingsDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]

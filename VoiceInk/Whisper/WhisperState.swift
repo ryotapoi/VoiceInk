@@ -377,6 +377,19 @@ class WhisperState: NSObject, ObservableObject {
             text = WordReplacementService.shared.applyReplacements(to: text, using: modelContext)
             logger.notice("📝 WordReplacement: \(text, privacy: .public)")
 
+            // Script Hook (Power Mode only)
+            if let activeConfig = activePowerModeConfig,
+               activeConfig.isEnabled,
+               let scriptPath = activeConfig.scriptHookPath,
+               !scriptPath.isEmpty {
+                if await checkCancellationAndCleanup() { return }
+                let hookTimeout = activeConfig.scriptHookTimeout ?? 30.0
+                text = await ScriptHookService.shared.execute(
+                    scriptPath: scriptPath, inputText: text, timeout: hookTimeout
+                )
+                logger.notice("📝 ScriptHook: \(text, privacy: .public)")
+            }
+
             let audioAsset = AVURLAsset(url: url)
             let actualDuration = (try? CMTimeGetSeconds(await audioAsset.load(.duration))) ?? 0.0
             

@@ -18,17 +18,21 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
     var isEnabled: Bool = true
     var isDefault: Bool = false
     var hotkeyShortcut: String? = nil
-        
+    var scriptHookPath: String? = nil
+    var scriptHookTimeout: TimeInterval? = nil
+
     enum CodingKeys: String, CodingKey {
         case id, name, emoji, appConfigs, urlConfigs, isAIEnhancementEnabled, selectedPrompt, selectedLanguage, useScreenCapture, selectedAIProvider, selectedAIModel, isAutoSendEnabled, isEnabled, isDefault, hotkeyShortcut
         case selectedWhisperModel
         case selectedTranscriptionModelName
+        case scriptHookPath, scriptHookTimeout
     }
     
     init(id: UUID = UUID(), name: String, emoji: String, appConfigs: [AppConfig]? = nil,
          urlConfigs: [URLConfig]? = nil, isAIEnhancementEnabled: Bool, selectedPrompt: String? = nil,
          selectedTranscriptionModelName: String? = nil, selectedLanguage: String? = nil, useScreenCapture: Bool = false,
-         selectedAIProvider: String? = nil, selectedAIModel: String? = nil, isAutoSendEnabled: Bool = false, isEnabled: Bool = true, isDefault: Bool = false, hotkeyShortcut: String? = nil) {
+         selectedAIProvider: String? = nil, selectedAIModel: String? = nil, isAutoSendEnabled: Bool = false, isEnabled: Bool = true, isDefault: Bool = false, hotkeyShortcut: String? = nil,
+         scriptHookPath: String? = nil, scriptHookTimeout: TimeInterval? = nil) {
         self.id = id
         self.name = name
         self.emoji = emoji
@@ -45,6 +49,8 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         self.isEnabled = isEnabled
         self.isDefault = isDefault
         self.hotkeyShortcut = hotkeyShortcut
+        self.scriptHookPath = scriptHookPath
+        self.scriptHookTimeout = scriptHookTimeout
     }
 
     init(from decoder: Decoder) throws {
@@ -64,6 +70,8 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
         isDefault = try container.decodeIfPresent(Bool.self, forKey: .isDefault) ?? false
         hotkeyShortcut = try container.decodeIfPresent(String.self, forKey: .hotkeyShortcut)
+        scriptHookPath = try container.decodeIfPresent(String.self, forKey: .scriptHookPath)
+        scriptHookTimeout = try container.decodeIfPresent(TimeInterval.self, forKey: .scriptHookTimeout)
 
         if let newModelName = try container.decodeIfPresent(String.self, forKey: .selectedTranscriptionModelName) {
             selectedTranscriptionModelName = newModelName
@@ -92,6 +100,8 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         try container.encode(isEnabled, forKey: .isEnabled)
         try container.encode(isDefault, forKey: .isDefault)
         try container.encodeIfPresent(hotkeyShortcut, forKey: .hotkeyShortcut)
+        try container.encodeIfPresent(scriptHookPath, forKey: .scriptHookPath)
+        try container.encodeIfPresent(scriptHookTimeout, forKey: .scriptHookTimeout)
     }
     
     
