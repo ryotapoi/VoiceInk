@@ -191,12 +191,12 @@ struct WordReplacementView: View {
     }
 
     private func addReplacement() {
-        let original = originalWord.trimmingCharacters(in: .whitespacesAndNewlines)
-        let replacement = replacementWord.trimmingCharacters(in: .whitespacesAndNewlines)
+        let original = originalWord
+        let replacement = replacementWord
 
         let tokens = original
             .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .map { String($0) }
             .filter { !$0.isEmpty }
         guard !tokens.isEmpty && !replacement.isEmpty else { return }
 
@@ -206,7 +206,7 @@ struct WordReplacementView: View {
         for existingReplacement in wordReplacements {
             let existingTokens = existingReplacement.originalText
                 .split(separator: ",")
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+                .map { String($0).lowercased() }
                 .filter { !$0.isEmpty }
 
             for tokenPair in newTokensPairs {

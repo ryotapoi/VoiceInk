@@ -122,11 +122,11 @@ struct EditReplacementSheet: View {
 
     // MARK: – Actions
     private func saveChanges() {
-        let newOriginal = originalWord.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newOriginal = originalWord
         let newReplacement = replacementWord
         let tokens = newOriginal
             .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .map { String($0) }
             .filter { !$0.isEmpty }
         guard !tokens.isEmpty, !newReplacement.isEmpty else { return }
 
@@ -143,7 +143,7 @@ struct EditReplacementSheet: View {
 
                 let existingTokens = existingReplacement.originalText
                     .split(separator: ",")
-                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+                    .map { String($0).lowercased() }
                     .filter { !$0.isEmpty }
 
                 for tokenPair in newTokensPairs {

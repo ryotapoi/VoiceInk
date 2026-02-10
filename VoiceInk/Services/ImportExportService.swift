@@ -245,7 +245,7 @@ class ImportExportService {
                         for existing in existingReplacements {
                             let tokens = existing.originalText
                                 .split(separator: ",")
-                                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+                                .map { String($0).lowercased() }
                                 .filter { !$0.isEmpty }
                             existingKeysSet.formUnion(tokens)
                         }
@@ -253,7 +253,7 @@ class ImportExportService {
                         for (original, replacement) in replacementsToImport {
                             let importTokens = original
                                 .split(separator: ",")
-                                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+                                .map { String($0).lowercased() }
                                 .filter { !$0.isEmpty }
 
                             // Check if any token already exists

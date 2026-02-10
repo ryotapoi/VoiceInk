@@ -177,7 +177,7 @@ class DictionaryImportExportService {
     private func extractWords(from key: String) -> [String] {
         return key
             .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .map { String($0) }
             .filter { !$0.isEmpty }
     }
 
