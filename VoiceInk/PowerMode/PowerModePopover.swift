@@ -32,10 +32,11 @@ struct PowerModePopover: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                     } else {
-                        ForEach(enabledConfigs) { config in
+                        ForEach(Array(enabledConfigs.enumerated()), id: \.element.id) { index, config in
                             PowerModeRow(
                                 config: config,
                                 isSelected: selectedConfig?.id == config.id,
+                                shortcutIndex: index < 10 ? index : nil,
                                 action: {
                                     powerModeManager.setActiveConfiguration(config)
                                     selectedConfig = config
@@ -48,7 +49,7 @@ struct PowerModePopover: View {
                 .padding(.horizontal)
             }
         }
-        .frame(width: 180)
+        .frame(width: 220)
         .frame(maxHeight: 340)
         .padding(.vertical, 8)
         .background(Color.black)
@@ -73,8 +74,9 @@ struct PowerModePopover: View {
 struct PowerModeRow: View {
     let config: PowerModeConfig
     let isSelected: Bool
+    let shortcutIndex: Int?
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
@@ -86,8 +88,15 @@ struct PowerModeRow: View {
                     .font(.system(size: 13))
                     .lineLimit(1)
 
+                Spacer()
+
+                if let idx = shortcutIndex {
+                    Text("⌥\(idx == 9 ? 0 : idx + 1)")
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.4))
+                }
+
                 if isSelected {
-                    Spacer()
                     Image(systemName: "checkmark")
                         .foregroundColor(.green)
                         .font(.system(size: 10))

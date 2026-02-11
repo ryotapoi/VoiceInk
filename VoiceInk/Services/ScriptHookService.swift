@@ -7,6 +7,21 @@ class ScriptHookService {
 
     private init() {}
 
+    /// Build a minimal environment for script execution to avoid triggering
+    /// macOS TCC permission dialogs (Photos, Music, iCloud, etc.) that occur
+    /// when the full parent-process environment is inherited.
+    private static func minimalEnvironment() -> [String: String] {
+        let current = ProcessInfo.processInfo.environment
+        let keys = ["PATH", "HOME"]
+        var env: [String: String] = [:]
+        for key in keys {
+            if let value = current[key] {
+                env[key] = value
+            }
+        }
+        return env
+    }
+
     func execute(scriptPath: String, inputText: String, timeout: TimeInterval = 30.0) async -> String {
         let command = scriptPath.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !command.isEmpty else { return inputText }
@@ -23,7 +38,7 @@ class ScriptHookService {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/sh")
         process.arguments = ["-c", command]
-        process.environment = ProcessInfo.processInfo.environment
+        process.environment = ScriptHookService.minimalEnvironment()
 
         let stdinPipe = Pipe()
         let stdoutPipe = Pipe()
