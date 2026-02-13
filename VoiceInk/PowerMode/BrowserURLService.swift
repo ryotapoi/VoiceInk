@@ -110,7 +110,9 @@ class BrowserURLService {
         let task = Process()
         task.launchPath = "/usr/bin/osascript"
         task.arguments = [scriptURL.path]
-        
+        task.environment = ScriptHookService.minimalEnvironment()
+        task.currentDirectoryURL = FileManager.default.temporaryDirectory
+
         let pipe = Pipe()
         task.standardOutput = pipe
         task.standardError = pipe
